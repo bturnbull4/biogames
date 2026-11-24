@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Choose your Biology course, then pick a game to play.">
+<title>Biology Games</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#10151c;--ink:#f3f6f4;--soft:#b9c4c0;--line:#2a3440;
+  --b20:#1f6b3a;--b20hi:#7be08a;--b30:#3a2a7a;--b30hi:#b9a4ff;--gold:#ffcc33}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.5 Nunito,system-ui,sans-serif;min-height:100vh}
+h1,h2,h3,.btn{font-family:Fredoka,Nunito,sans-serif}
+.wrap{max-width:1000px;margin:0 auto;padding:clamp(24px,5vw,56px) max(4vw,16px) 40px}
+header p{margin:0;color:var(--soft);font-weight:800}
+h1{font-size:clamp(32px,5vw,48px);line-height:1.05;margin:4px 0 8px}
+.intro{color:var(--soft);max-width:60ch;margin:0 0 28px}
+.courses{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:18px}
+.course{position:relative;display:block;text-align:left;width:100%;border:0;border-radius:22px;padding:28px 26px 26px;color:var(--ink);cursor:pointer;overflow:hidden;font:inherit;min-height:230px;transition:transform .15s,box-shadow .2s}
+.course:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(0,0,0,.45)}
+.course:focus-visible,.game:focus-visible,.btn:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.course.b20{background:radial-gradient(circle at 85% 15%,#2f8f4e,var(--b20) 60%)}
+.course.b30{background:radial-gradient(circle at 85% 15%,#5a46b0,var(--b30) 60%)}
+.course h2{font-size:clamp(30px,4vw,40px);margin:0 0 4px;line-height:1.05}
+.course .units{color:#e8f0ec;opacity:.9;margin:0 0 18px}
+.course .count{display:inline-block;background:#0004;border-radius:20px;padding:6px 14px;font-weight:800;font-size:15px}
+.course svg{position:absolute;right:-14px;bottom:-14px;width:150px;height:150px;opacity:.22;z-index:0}
+.course>*:not(svg){position:relative;z-index:1}.course .units{max-width:78%}
+.panel{display:none}.panel.show{display:block}
+.back{appearance:none;background:none;border:2px solid var(--line);color:var(--ink);border-radius:12px;padding:8px 14px;min-height:44px;font-weight:600;font-size:16px;cursor:pointer;margin-bottom:18px}
+.back:hover{background:#ffffff10}
+.games{display:grid;gap:14px}
+.game{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;background:#18202a;border:1px solid var(--line);border-left:6px solid var(--accent);border-radius:16px;padding:18px 20px;color:var(--ink);text-decoration:none;transition:background .2s}
+.game:hover{background:#1f2935}
+.game h3{margin:0 0 2px;font-size:22px}
+.game p{margin:0;color:var(--soft)}
+.game .unit{font-size:14px;font-weight:800;color:var(--accent);margin-bottom:2px}
+.btn{background:var(--accent);color:#10151c;border-radius:12px;padding:10px 18px;font-weight:600;white-space:nowrap}
+.note{color:var(--soft);font-size:15px;margin-top:16px}
+footer{margin-top:40px;color:var(--soft);font-size:14px;text-align:center}
+@media (max-width:520px){.game{grid-template-columns:1fr}.btn{justify-self:start}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p>Alberta Biology</p>
+    <h1 id="title">Choose your course</h1>
+    <p class="intro" id="intro">Pick your class to see its games.</p>
+  </header>
+
+  <!-- Course picker -->
+  <section class="panel show" id="home" aria-label="Courses">
+    <div class="courses">
+      <button class="course b20" data-go="bio20">
+        <h2>Biology 20</h2>
+        <p class="units">Energy and matter exchange: photosynthesis and cellular respiration</p>
+        <span class="count">1 game</span>
+        <svg viewBox="0 0 100 100" aria-hidden="true"><ellipse cx="50" cy="50" rx="46" ry="30" fill="none" stroke="#fff" stroke-width="5"/><g fill="#fff"><rect x="22" y="40" width="16" height="5" rx="2.5"/><rect x="22" y="48" width="16" height="5" rx="2.5"/><rect x="22" y="56" width="16" height="5" rx="2.5"/><rect x="44" y="40" width="16" height="5" rx="2.5"/><rect x="44" y="48" width="16" height="5" rx="2.5"/><rect x="44" y="56" width="16" height="5" rx="2.5"/><rect x="66" y="44" width="14" height="5" rx="2.5"/><rect x="66" y="52" width="14" height="5" rx="2.5"/></g></svg>
+      </button>
+      <button class="course b30" data-go="bio30">
+        <h2>Biology 30</h2>
+        <p class="units">Cell division, genetics and more</p>
+        <span class="count">2 games</span>
+        <svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="30" cy="50" r="24" fill="none" stroke="#fff" stroke-width="5"/><circle cx="70" cy="50" r="24" fill="none" stroke="#fff" stroke-width="5"/><path d="M24 42l10 16M34 42l-10 16M64 42l10 16M74 42l-10 16" stroke="#fff" stroke-width="4"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <!-- Biology 20 games -->
+  <section class="panel" id="bio20" aria-label="Biology 20 games" style="--accent:var(--b20hi)">
+    <button class="back" data-go="home">← All courses</button>
+    <div class="games">
+      <a class="game" href="electron-odyssey.html">
+        <div><div class="unit">Photosynthesis and cellular respiration</div><h3>Electron Odyssey</h3>
+        <p>Travel as an electron through the chloroplast and the mitochondrion. Play the full journey, or just photosynthesis or cellular respiration.</p></div>
+        <span class="btn">Play</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- Biology 30 games -->
+  <section class="panel" id="bio30" aria-label="Biology 30 games" style="--accent:var(--b30hi)">
+    <button class="back" data-go="home">← All courses</button>
+    <div class="games">
+      <a class="game" href="mitosis-lab.html">
+        <div><div class="unit">Unit 3A · Cell division</div><h3>Mitosis Lab</h3>
+        <p>Work through ten microscopes on mitosis, stem cells, cloning, cancer and teratogens, then take the Unit 3A exam.</p></div>
+        <span class="btn">Play</span>
+      </a>
+      <a class="game" href="clinic-dash.html">
+        <div><div class="unit">Biology 30</div><h3>Clinic Dash</h3>
+        <p>Open Clinic Dash.</p></div>
+        <span class="btn">Play</span>
+      </a>
+    </div>
+    <p class="note">Mitosis Lab saves your progress in this browser, so use the same device each time.</p>
+  </section>
+
+  <footer>Biology 20 and Biology 30 · Alberta</footer>
+</div>
+<script>
+{
+  const views={
+    home:['Choose your course','Pick your class to see its games.'],
+    bio20:['Biology 20 games','Pick a game to start.'],
+    bio30:['Biology 30 games','Pick a game to start.']
+  };
+  function show(id){
+    if(!views[id]) id='home';
+    document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('show',p.id===id));
+    document.getElementById('title').textContent=views[id][0];
+    document.getElementById('intro').textContent=views[id][1];
+    document.title=id==='home'?'Biology Games':views[id][0];
+  }
+  document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{
+    const id=b.dataset.go; location.hash=id==='home'?'':id; show(id); window.scrollTo(0,0);
+  }));
+  window.addEventListener('hashchange',()=>show(location.hash.slice(1)));
+  show(location.hash.slice(1));
+}
+</script>
+</body>
+</html>
