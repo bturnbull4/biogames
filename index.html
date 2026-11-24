@@ -3,124 +3,129 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Choose your Biology course, then pick a game to play.">
-<title>Biology Games</title>
+<meta name="description" content="Find your course's shelf and pick a game to play.">
+<title>Science Games</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#10151c;--ink:#f3f6f4;--soft:#b9c4c0;--line:#2a3440;
-  --b20:#1f6b3a;--b20hi:#7be08a;--b30:#3a2a7a;--b30hi:#b9a4ff;--gold:#ffcc33}
+/* VOICE playful school library, still tidy enough for teens
+   IDEA a classroom bookcase: one shelf per course, each game a coloured book spine
+   PICTURE wooden shelves with brass label plates; books lift when pointed at
+   COLOUR dark room wall, warm walnut wood, brass plates, one strong colour per book
+   TYPE Fredoka for plates and spines, Nunito for text */
+:root{--wall:#141a22;--ink:#f3f6f4;--soft:#b9c4c0;--wood:#6a4325;--woodlo:#4a2d17;--woodhi:#9a6a3e;--back:#2a1a0f;--brass:#e3c065;--gold:#ffcc33}
 *{box-sizing:border-box;min-width:0}
-body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.5 Nunito,system-ui,sans-serif;min-height:100vh}
-h1,h2,h3,.btn{font-family:Fredoka,Nunito,sans-serif}
-.wrap{max-width:1000px;margin:0 auto;padding:clamp(24px,5vw,56px) max(4vw,16px) 40px}
-header p{margin:0;color:var(--soft);font-weight:800}
-h1{font-size:clamp(32px,5vw,48px);line-height:1.05;margin:4px 0 8px}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--wall);background-image:repeating-linear-gradient(90deg,#ffffff05 0 2px,transparent 2px 64px);color:var(--ink);font:17px/1.5 Nunito,system-ui,sans-serif;min-height:100vh;overflow-x:clip}
+h1,h2,.book .t,.sign{font-family:Fredoka,Nunito,sans-serif}
+.wrap{max-width:880px;margin:0 auto;padding:clamp(24px,5vw,52px) max(4vw,16px) 40px}
+h1{font-size:clamp(32px,5vw,48px);line-height:1.05;margin:0 0 8px}
 .intro{color:var(--soft);max-width:60ch;margin:0 0 28px}
-.courses{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:18px}
-.course{position:relative;display:block;text-align:left;width:100%;border:0;border-radius:22px;padding:28px 26px 26px;color:var(--ink);cursor:pointer;overflow:hidden;font:inherit;min-height:230px;transition:transform .15s,box-shadow .2s}
-.course:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(0,0,0,.45)}
-.course:focus-visible,.game:focus-visible,.btn:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
-.course.b20{background:radial-gradient(circle at 85% 15%,#2f8f4e,var(--b20) 60%)}
-.course.b30{background:radial-gradient(circle at 85% 15%,#5a46b0,var(--b30) 60%)}
-.course h2{font-size:clamp(30px,4vw,40px);margin:0 0 4px;line-height:1.05}
-.course .units{color:#e8f0ec;opacity:.9;margin:0 0 18px}
-.course .count{display:inline-block;background:#0004;border-radius:20px;padding:6px 14px;font-weight:800;font-size:15px}
-.course svg{position:absolute;right:-14px;bottom:-14px;width:150px;height:150px;opacity:.22;z-index:0}
-.course>*:not(svg){position:relative;z-index:1}.course .units{max-width:78%}
-.panel{display:none}.panel.show{display:block}
-.back{appearance:none;background:none;border:2px solid var(--line);color:var(--ink);border-radius:12px;padding:8px 14px;min-height:44px;font-weight:600;font-size:16px;cursor:pointer;margin-bottom:18px}
-.back:hover{background:#ffffff10}
-.games{display:grid;gap:14px}
-.game{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;background:#18202a;border:1px solid var(--line);border-left:6px solid var(--accent);border-radius:16px;padding:18px 20px;color:var(--ink);text-decoration:none;transition:background .2s}
-.game:hover{background:#1f2935}
-.game h3{margin:0 0 2px;font-size:22px}
-.game p{margin:0;color:var(--soft)}
-.game .unit{font-size:14px;font-weight:800;color:var(--accent);margin-bottom:2px}
-.btn{background:var(--accent);color:#10151c;border-radius:12px;padding:10px 18px;font-weight:600;white-space:nowrap}
-.note{color:var(--soft);font-size:15px;margin-top:16px}
-footer{margin-top:40px;color:var(--soft);font-size:14px;text-align:center}
-@media (max-width:520px){.game{grid-template-columns:1fr}.btn{justify-self:start}}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.case{scroll-margin-top:16px;margin-bottom:38px}
+.frame{background:var(--wood);background-image:repeating-linear-gradient(90deg,#00000018 0 1px,transparent 1px 7px,#ffffff0a 7px 8px,transparent 8px 19px);border-radius:8px;padding:0 14px;box-shadow:0 18px 30px #0007}
+.top{display:flex;justify-content:center;padding:12px 0}
+.plate{background:linear-gradient(180deg,#f3d98a,var(--brass) 45%,#a87b25);color:#3a2410;border-radius:6px;padding:6px 22px 7px;text-align:center;box-shadow:inset 0 1px 0 #fff8,0 2px 0 #3a2410,0 4px 8px #0006;position:relative}
+.plate::before,.plate::after{content:"";position:absolute;top:50%;width:6px;height:6px;margin-top:-3px;border-radius:50%;background:#7a5718;box-shadow:inset 0 1px 0 #0005}
+.plate::before{left:8px}.plate::after{right:8px}
+.plate h2{margin:0;font-size:clamp(22px,3vw,28px);line-height:1.1}
+.plate span{display:block;font-size:13px;font-weight:800;opacity:.85}
+.shelf{background:linear-gradient(180deg,#120a05,var(--back) 30%,#3a2415);border-radius:3px 3px 0 0;min-height:290px;padding:22px 16px 0;display:flex;align-items:flex-end;gap:6px;box-shadow:inset 0 10px 18px #000a,inset 10px 0 14px #0006,inset -10px 0 14px #0006;overflow:hidden}
+.board{height:20px;background:linear-gradient(180deg,var(--woodhi),#7c5230 40%,var(--woodlo));border-radius:0 0 3px 3px;margin:0 -6px;box-shadow:0 2px 0 #2a180c}
+.foot{height:14px}
+.book{--c:#3a6;position:relative;flex:none;width:var(--w,68px);height:var(--h,200px);border-radius:5px 5px 2px 2px;color:#fff;text-decoration:none;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:22px 0 16px;background:linear-gradient(90deg,color-mix(in srgb,var(--c) 60%,#000) 0,var(--c) 14%,color-mix(in srgb,var(--c) 75%,#fff) 42%,var(--c) 70%,color-mix(in srgb,var(--c) 55%,#000) 100%);box-shadow:3px 0 6px #0008;transition:transform .2s ease,box-shadow .2s}
+.book::before,.book::after{content:"";position:absolute;left:0;right:0;height:3px;background:var(--brass);box-shadow:0 5px 0 #e3c06599}
+.book::before{top:10px}.book::after{bottom:16px;box-shadow:0 -5px 0 #e3c06599}
+.book .t{writing-mode:vertical-rl;font-size:19px;font-weight:600;letter-spacing:.02em;white-space:nowrap;text-shadow:0 1px 2px #0007}
+.book svg{width:34px;height:34px;flex:none}
+.book:hover,.book:focus-visible{transform:translateY(-14px);box-shadow:3px 8px 12px #000a}
+.book:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.deco{flex:none;align-self:flex-end;margin-left:auto;pointer-events:none}
+.blurb{margin:12px 4px 0;color:var(--soft);min-height:3em;max-width:70ch}
+.blurb b{color:var(--ink)}
+.empty .shelf{justify-content:center;align-items:flex-end;gap:0}
+.ghost{flex:none;width:58px;border:2px dashed #ffffff26;border-bottom:0;border-radius:5px 5px 0 0;margin:0 3px}
+.sign{align-self:center;margin:0 18px 30px;background:#fbf6e9;color:#3a2410;padding:14px 22px;border-radius:4px;font-size:clamp(22px,3vw,28px);font-weight:600;line-height:1.1;text-align:center;transform:rotate(-3deg);box-shadow:0 6px 12px #0008}
+.sign small{display:block;font-family:Nunito,sans-serif;font-size:14px;font-weight:800;color:#6b5236;margin-top:4px}
+footer{margin-top:20px;color:var(--soft);font-size:14px;text-align:center}
+@media (max-width:520px){.shelf{padding:18px 10px 0;gap:4px;min-height:230px}.book{--w:58px}.book .t{font-size:18px}.deco{display:none}.ghost:nth-child(n+4){display:none}.sign{margin:0 8px 24px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <p>Alberta Biology</p>
-    <h1 id="title">Choose your course</h1>
-    <p class="intro" id="intro">Pick your class to see its games.</p>
+    <h1>Choose a game</h1>
+    <p class="intro">Find your course's shelf and pick a book to play.</p>
   </header>
 
-  <!-- Course picker -->
-  <section class="panel show" id="home" aria-label="Courses">
-    <div class="courses">
-      <button class="course b20" data-go="bio20">
-        <h2>Biology 20</h2>
-        <p class="units">Energy and matter exchange: photosynthesis and cellular respiration</p>
-        <span class="count">1 game</span>
-        <svg viewBox="0 0 100 100" aria-hidden="true"><ellipse cx="50" cy="50" rx="46" ry="30" fill="none" stroke="#fff" stroke-width="5"/><g fill="#fff"><rect x="22" y="40" width="16" height="5" rx="2.5"/><rect x="22" y="48" width="16" height="5" rx="2.5"/><rect x="22" y="56" width="16" height="5" rx="2.5"/><rect x="44" y="40" width="16" height="5" rx="2.5"/><rect x="44" y="48" width="16" height="5" rx="2.5"/><rect x="44" y="56" width="16" height="5" rx="2.5"/><rect x="66" y="44" width="14" height="5" rx="2.5"/><rect x="66" y="52" width="14" height="5" rx="2.5"/></g></svg>
-      </button>
-      <button class="course b30" data-go="bio30">
-        <h2>Biology 30</h2>
-        <p class="units">Cell division, genetics and more</p>
-        <span class="count">2 games</span>
-        <svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="30" cy="50" r="24" fill="none" stroke="#fff" stroke-width="5"/><circle cx="70" cy="50" r="24" fill="none" stroke="#fff" stroke-width="5"/><path d="M24 42l10 16M34 42l-10 16M64 42l10 16M74 42l-10 16" stroke="#fff" stroke-width="4"/></svg>
-      </button>
+  <section class="case" id="bio20" aria-labelledby="h20">
+    <div class="frame">
+      <div class="top"><div class="plate"><h2 id="h20">Biology 20</h2><span>1 game</span></div></div>
+      <div class="shelf">
+        <a class="book" href="electron-odyssey.html" style="--c:#1f8a4c;--h:262px;--w:72px" data-d="Photosynthesis and cellular respiration. Travel as an electron through the chloroplast and the mitochondrion. Play the full journey, or just one half.">
+          <span class="t">Electron Odyssey</span>
+          <svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="20" rx="16" ry="11" fill="none" stroke="#fff" stroke-width="2.5"/><g fill="#fff"><rect x="10" y="15" width="7" height="2.5" rx="1.2"/><rect x="10" y="19" width="7" height="2.5" rx="1.2"/><rect x="10" y="23" width="7" height="2.5" rx="1.2"/><rect x="21" y="15" width="8" height="2.5" rx="1.2"/><rect x="21" y="19" width="8" height="2.5" rx="1.2"/><rect x="21" y="23" width="8" height="2.5" rx="1.2"/></g></svg>
+        </a>
+        <svg class="deco" width="96" height="120" viewBox="0 0 96 120" aria-hidden="true"><path d="M48 64C34 52 18 50 8 56c12 2 24 6 36 14M48 62c4-18 14-30 30-34-6 12-14 24-26 36M48 66C46 44 36 26 22 18c4 16 12 32 24 46" fill="#3fa05a"/><path d="M48 66c2-14 2-26-2-40" stroke="#2c7a43" stroke-width="3" fill="none"/><path d="M26 70h44l-6 48H32z" fill="#b5532b"/><rect x="22" y="66" width="52" height="10" rx="2" fill="#cf6a3c"/></svg>
+      </div>
+      <div class="board"></div><div class="foot"></div>
+    </div>
+    <p class="blurb" aria-live="polite"></p>
+  </section>
+
+  <section class="case" id="bio30" aria-labelledby="h30">
+    <div class="frame">
+      <div class="top"><div class="plate"><h2 id="h30">Biology 30</h2><span>3 games</span></div></div>
+      <div class="shelf">
+        <a class="book" href="mitosis-lab.html" style="--c:#5b3fb0;--h:226px;--w:74px" data-d="Unit 3A, cell division. Work through ten microscopes on mitosis, stem cells, cloning, cancer and teratogens, then take the Unit 3A exam. Saves your progress in this browser, so use the same device each time.">
+          <span class="t">Mitosis Lab</span>
+          <svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="13" cy="20" r="9" fill="none" stroke="#fff" stroke-width="2.5"/><circle cx="27" cy="20" r="9" fill="none" stroke="#fff" stroke-width="2.5"/><path d="M10 16l6 8M16 16l-6 8M24 16l6 8M30 16l-6 8" stroke="#fff" stroke-width="2"/></svg>
+        </a>
+        <a class="book" href="clinic-dash.html" style="--c:#0f7a7e;--h:206px;--w:66px" data-d="Reproduction and STIs. Run a busy clinic: seat patients, use the lab and the reference wall, and keep the waiting room moving.">
+          <span class="t">Clinic Dash</span>
+          <svg viewBox="0 0 40 40" aria-hidden="true"><rect x="8" y="8" width="24" height="24" rx="5" fill="none" stroke="#fff" stroke-width="2.5"/><path d="M20 13v14M13 20h14" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg>
+        </a>
+        <a class="book" href="karyotype-lab.html" style="--c:#c4501a;--h:232px;--w:70px" data-d="Karyotypes and nondisjunction. Match chromosomes to their partners under the microscope, then diagnose six patients and explain how the error happened in meiosis.">
+          <span class="t">Karyotype Lab</span>
+          <svg viewBox="0 0 40 40" aria-hidden="true"><g fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><path d="M10 9c3 6 3 16 0 22M16 9c-3 6-3 16 0 22"/><path d="M25 13c2 4 2 10 0 14M30 13c-2 4-2 10 0 14"/></g></svg>
+        </a>
+        <svg class="deco" width="92" height="130" viewBox="0 0 92 130" aria-hidden="true"><rect x="14" y="118" width="64" height="10" rx="3" fill="#3b4652"/><rect x="40" y="70" width="10" height="48" fill="#5b6773"/><path d="M58 30l-22 50" stroke="#8c99a6" stroke-width="12" stroke-linecap="round"/><rect x="50" y="10" width="14" height="22" rx="3" transform="rotate(24 57 21)" fill="#c9d3dc"/><rect x="24" y="84" width="40" height="6" rx="2" fill="#8c99a6"/><path d="M50 70c18 0 22 22 6 34" stroke="#5b6773" stroke-width="8" fill="none"/></svg>
+      </div>
+      <div class="board"></div><div class="foot"></div>
+    </div>
+    <p class="blurb" aria-live="polite"></p>
+  </section>
+
+  <section class="case empty" id="physics30" aria-labelledby="hp30">
+    <div class="frame">
+      <div class="top"><div class="plate"><h2 id="hp30">Physics 30</h2><span>No games yet</span></div></div>
+      <div class="shelf">
+        <span class="ghost" style="height:170px" aria-hidden="true"></span>
+        <span class="ghost" style="height:196px" aria-hidden="true"></span>
+        <div class="sign">Coming soon<small>New games are on the way</small></div>
+        <span class="ghost" style="height:184px" aria-hidden="true"></span>
+        <span class="ghost" style="height:160px" aria-hidden="true"></span>
+      </div>
+      <div class="board"></div><div class="foot"></div>
     </div>
   </section>
 
-  <!-- Biology 20 games -->
-  <section class="panel" id="bio20" aria-label="Biology 20 games" style="--accent:var(--b20hi)">
-    <button class="back" data-go="home">← All courses</button>
-    <div class="games">
-      <a class="game" href="electron-odyssey.html">
-        <div><div class="unit">Photosynthesis and cellular respiration</div><h3>Electron Odyssey</h3>
-        <p>Travel as an electron through the chloroplast and the mitochondrion. Play the full journey, or just photosynthesis or cellular respiration.</p></div>
-        <span class="btn">Play</span>
-      </a>
-    </div>
-  </section>
-
-  <!-- Biology 30 games -->
-  <section class="panel" id="bio30" aria-label="Biology 30 games" style="--accent:var(--b30hi)">
-    <button class="back" data-go="home">← All courses</button>
-    <div class="games">
-      <a class="game" href="mitosis-lab.html">
-        <div><div class="unit">Unit 3A · Cell division</div><h3>Mitosis Lab</h3>
-        <p>Work through ten microscopes on mitosis, stem cells, cloning, cancer and teratogens, then take the Unit 3A exam.</p></div>
-        <span class="btn">Play</span>
-      </a>
-      <a class="game" href="clinic-dash.html">
-        <div><div class="unit">Biology 30</div><h3>Clinic Dash</h3>
-        <p>Open Clinic Dash.</p></div>
-        <span class="btn">Play</span>
-      </a>
-    </div>
-    <p class="note">Mitosis Lab saves your progress in this browser, so use the same device each time.</p>
-  </section>
-
-  <footer>Biology 20 and Biology 30 · Alberta</footer>
+  <footer>Biology 20, Biology 30 and Physics 30 · Alberta</footer>
 </div>
 <script>
 {
-  const views={
-    home:['Choose your course','Pick your class to see its games.'],
-    bio20:['Biology 20 games','Pick a game to start.'],
-    bio30:['Biology 30 games','Pick a game to start.']
-  };
-  function show(id){
-    if(!views[id]) id='home';
-    document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('show',p.id===id));
-    document.getElementById('title').textContent=views[id][0];
-    document.getElementById('intro').textContent=views[id][1];
-    document.title=id==='home'?'Biology Games':views[id][0];
-  }
-  document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{
-    const id=b.dataset.go; location.hash=id==='home'?'':id; show(id); window.scrollTo(0,0);
-  }));
-  window.addEventListener('hashchange',()=>show(location.hash.slice(1)));
-  show(location.hash.slice(1));
+  const hover=window.matchMedia('(hover:hover)').matches;
+  document.querySelectorAll('.case').forEach(c=>{
+    const blurb=c.querySelector('.blurb');if(!blurb)return;
+    const dflt=hover?'Point at a book to see what it’s about, then click to play.':'Tap a book to play.';
+    const set=b=>{blurb.textContent='';if(!b){blurb.textContent=dflt;return;}const t=document.createElement('b');t.textContent=b.querySelector('.t').textContent+': ';blurb.append(t,b.dataset.d);};
+    set(null);
+    c.querySelectorAll('.book').forEach(b=>{
+      b.setAttribute('aria-label',b.querySelector('.t').textContent+'. '+b.dataset.d);
+      b.addEventListener('mouseenter',()=>set(b));b.addEventListener('focus',()=>set(b));
+    });
+    c.querySelector('.shelf').addEventListener('mouseleave',()=>set(null));
+  });
 }
 </script>
 </body>
