@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Electron Odyssey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+/* VOICE: playful adventure game for Biology 20 students; you ARE the electron
+   IDEA: a journey map through two organelles, one membrane-scene per stop
+   PICTURE: each stage is a live scene (photons falling, membranes, a spinning Krebs wheel)
+   COLOUR and TYPE: chloroplast chapter = night-leaf green + sunlight gold; mitochondria = plum + coral + ATP gold; Fredoka / Nunito
+   LAYOUT: HUD bar, scene card, mission text + controls beneath; stacks on phones */
+:root{color-scheme:dark;--bg:#0c2318;--bg2:#12331f;--panel:#173d27;--ink:#f2f7ef;--soft:#b7d3bd;--accent:#ffcc33;--good:#7be08a;--bad:#ff7a6b;--line:#2c5a3c}
+body.mito{--bg:#230d1f;--bg2:#2f1329;--panel:#3a1934;--soft:#e3bfd8;--accent:#ffc94a;--line:#5d2b52}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:radial-gradient(ellipse at 50% -10%,var(--bg2),var(--bg) 60%);background-attachment:fixed;color:var(--ink);font:17px/1.5 Nunito,system-ui,sans-serif;min-height:100vh;transition:background .6s}
+h1,h2,h3,.hud b,.btn{font-family:Fredoka,Nunito,sans-serif}
+.wrap{max-width:960px;margin:0 auto;padding:14px max(3vw,12px) 40px}
+.hud{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:14px}
+.hud .ttl{font:600 20px Fredoka,sans-serif;color:var(--accent)}
+.stats{display:flex;gap:14px;font-size:15px;color:var(--soft)}.stats b{color:var(--ink);font-size:18px}
+.track{display:flex;gap:5px;flex-wrap:wrap;margin:10px 2px 0}.track i{width:22px;height:7px;border-radius:4px;background:var(--line)}.track i.on{background:var(--accent)}.track i.done{background:var(--good)}
+.card{margin-top:14px;background:var(--panel);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 14px 40px rgba(0,0,0,.35)}
+.scene{position:relative;height:clamp(250px,44vw,380px);background:linear-gradient(#0003,#0006);overflow:hidden;border-bottom:1px solid var(--line)}
+.scene svg{position:absolute;inset:0;width:100%;height:100%;font-family:Nunito,system-ui,sans-serif}
+.body{padding:18px clamp(14px,3vw,26px) 22px}
+.body h2{margin:0 0 4px;font-size:clamp(22px,3.4vw,30px);line-height:1.1}
+.chap{font-size:14px;color:var(--soft);font-weight:700}
+.mission{color:var(--soft);margin:6px 0 14px;max-width:68ch}
+.mission b{color:var(--ink)}
+.row{display:flex;flex-wrap:wrap;gap:10px}
+.btn{appearance:none;border:2px solid var(--line);background:#ffffff10;color:var(--ink);font-size:17px;font-weight:600;padding:10px 16px;min-height:46px;border-radius:12px;cursor:pointer;transition:transform .12s,background .2s}
+.btn:hover{background:#ffffff22}.btn:active{transform:scale(.97)}.btn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.btn.go{background:var(--accent);color:#1d1400;border-color:var(--accent)}
+.btn.ok{border-color:var(--good);background:#7be08a33}.btn.no{border-color:var(--bad);background:#ff7a6b33;animation:shake .3s}
+.btn:disabled{opacity:.45;cursor:default}
+.opts{display:grid;gap:8px}.opts .btn{text-align:left;font-family:Nunito,sans-serif;font-weight:700}
+.fb{margin-top:12px;padding:10px 14px;border-radius:12px;display:none}.fb.show{display:block}.fb.good{background:#7be08a26;border:1px solid var(--good)}.fb.bad{background:#ff7a6b22;border:1px solid var(--bad)}
+.meter{height:14px;border-radius:7px;background:#0005;overflow:hidden;border:1px solid var(--line)}.meter>span{display:block;height:100%;width:0;background:var(--accent);transition:width .4s}
+.lbl{font-size:14px;color:var(--soft);margin:8px 0 3px}
+.photon{position:absolute;top:-50px;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;font:700 13px Nunito;color:#111;cursor:pointer;box-shadow:0 0 18px currentColor;border:none}
+.chip{position:absolute;padding:6px 11px;border-radius:20px;font:800 15px Nunito;cursor:pointer;border:2px solid #fff6;color:#111;animation:pop .3s}
+.tag{position:absolute;font:700 14px Nunito;color:var(--soft)}
+.big{font:600 clamp(34px,6vw,54px) Fredoka;color:var(--accent);line-height:1}
+input.num{font:700 20px Nunito;width:110px;padding:8px 10px;border-radius:10px;border:2px solid var(--line);background:#0004;color:var(--ink);min-height:46px}
+.tally{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.tally span{background:#0004;border:1px solid var(--line);padding:4px 10px;border-radius:20px;font-weight:800;font-size:15px}
+.spin{transform-origin:center;transform-box:fill-box;animation:sp 4s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}@keyframes draw{to{stroke-dashoffset:0}}@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}@keyframes pop{from{transform:scale(.3);opacity:0}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.foot{margin-top:14px;font-size:13px;color:var(--soft);text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hud">
+    <span class="ttl">Electron Odyssey</span>
+    <div class="stats"><span>Score <b id="score">0</b></span><span>ATP <b id="atp">0</b></span><span>Energy <b id="nrg">low</b></span></div>
+  </div>
+  <div class="track" id="track"></div>
+  <div class="card">
+    <div class="scene" id="scene"></div>
+    <div class="body" id="body"></div>
+  </div>
+  <div class="foot">Biology 20 · Photosynthesis and Cellular Respiration</div>
+</div>
+<script>
+{
+const $ = s => document.querySelector(s);
+const ORDERS={full:[0,1,2,3,4,5,6,7,8,9,10,11],photo:[0,1,2,3,4,5,11],resp:[0,6,7,8,9,10,11]};
+const S = {score:0, atp:0, missed:[], stage:0, mode:'full', order:ORDERS.full, pos:0};
+const scene = $('#scene'), body = $('#body');
+let gen=0;
+const later=(fn,ms)=>{const g=gen;return setTimeout(()=>{if(g===gen)fn()},ms)};
+const rnd = (a,b)=>a+Math.random()*(b-a);
+const shuffle = a => {a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+function hud(){ $('#score').textContent=S.score; $('#atp').textContent=S.atp; }
+function energy(t){ $('#nrg').textContent=t; }
+function add(n){ S.score+=n; hud(); }
+function setScene(html){ scene.innerHTML=html; }
+function page(chap,title,mission){
+  body.innerHTML=`<div class="chap">${chap}</div><h2>${title}</h2><p class="mission">${mission}</p><div id="ctl"></div><div class="fb" id="fb"></div>`;
+  return $('#ctl');
+}
+function fb(msg,good){ const f=$('#fb'); f.className='fb show '+(good?'good':'bad'); f.innerHTML=msg; }
+function nextBtn(label='Continue →'){ if(S.order[S.pos+1]===11) label='See results →'; const b=document.createElement('button'); b.className='btn go'; b.textContent=label; b.style.marginTop='12px'; b.onclick=next; $('#fb').after(b); b.focus(); }
+/* multiple-choice helper: first-try correct = 10 pts */
+function ask(el,q,opts,correct,why,done,topic){
+  el.insertAdjacentHTML('beforeend',`<p style="margin:4px 0 10px;font-weight:800">${q}</p><div class="opts"></div>`);
+  const box=el.querySelector('.opts:last-child'); let tries=0;
+  shuffle(opts.map((o,i)=>[o,i])).forEach(([o,i])=>{
+    const b=document.createElement('button'); b.className='btn'; b.innerHTML=o;
+    b.onclick=()=>{ tries++;
+      if(i===correct){ b.classList.add('ok'); box.querySelectorAll('button').forEach(x=>x.disabled=true);
+        if(tries===1) add(10); else if(topic && !S.missed.includes(topic)) S.missed.push(topic);
+        fb((tries===1?'<b>Correct!</b> ':'<b>Got it.</b> ')+why,true); done&&done(); }
+      else { b.classList.add('no'); b.disabled=true; fb('<b>Not quite.</b> Try another answer.',false); }
+    };
+    box.appendChild(b);
+  });
+}
+function mito(cx,cy,rx,ry){
+  const pt=(f,a)=>`${(cx+rx*f*Math.cos(a)).toFixed(1)} ${(cy+ry*f*Math.sin(a)).toFixed(1)}`;
+  let d=''; for(let k=0;k<=360;k++){ const a=k/360*Math.PI*2, f=1-0.24*Math.pow(0.5+0.5*Math.cos(12*a),4); d+=(k?'L':'M')+pt(f*0.9,a); }
+  return `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="#7a2b55" stroke="#ff9ac8" stroke-width="6"/><path d="${d}Z" fill="#4a1736" stroke="#ff9ac8" stroke-width="4" stroke-linejoin="round"/>`;
+}
+function membraneSVG(top,bottom,extra='',col='#5fd068'){
+  let heads=''; for(let x=0;x<=1000;x+=22) heads+=`<circle cx="${x}" cy="150" r="9" fill="${col}"/><circle cx="${x}" cy="230" r="9" fill="${col}"/>`;
+  return `<svg viewBox="0 0 1000 380" preserveAspectRatio="xMidYMid meet">
+  <rect width="1000" height="140" fill="#ffffff08"/><rect y="240" width="1000" height="140" fill="#00000030"/>
+  <rect y="150" width="1000" height="80" fill="${col}" opacity=".18"/>${heads}
+  <text x="16" y="32" fill="#fff" opacity=".75" font-size="22" font-family="Nunito, sans-serif" font-weight="800">${top}</text>
+  <text x="16" y="366" fill="#fff" opacity=".75" font-size="22" font-family="Nunito, sans-serif" font-weight="800">${bottom}</text>${extra}</svg>`;
+}
+const electron=(x,y,id='e')=>`<g id="${id}" style="transition:transform .7s" transform="translate(${x},${y})"><circle r="20" fill="#ffe14d"/><circle r="30" fill="#ffe14d" opacity=".25"/><text y="7" text-anchor="middle" font-size="20" font-weight="800" fill="#222" font-family="Nunito, sans-serif">e⁻</text></g>`;
+
+/* ---------------- STAGES ---------------- */
+const C1='Chapter 1 · The Chloroplast', C2='Chapter 2 · The Mitochondrion';
+const stages=[
+
+/* 0 intro */
+()=>{ document.body.className='';
+  setScene(`<svg viewBox="0 0 1000 380" preserveAspectRatio="xMidYMid meet"><defs><radialGradient id="sun"><stop offset="0" stop-color="#fff3b0"/><stop offset="1" stop-color="#ffcc33" stop-opacity="0"/></radialGradient></defs>
+  <circle cx="860" cy="60" r="170" fill="url(#sun)"/>
+  <ellipse cx="420" cy="220" rx="330" ry="140" fill="#2e7d3c" stroke="#8fe39b" stroke-width="6"/>
+  ${[0,1,2].map(i=>[0,1,2,3,4].map(j=>`<ellipse cx="${260+i*150}" cy="${170+j*22}" rx="55" ry="10" fill="#4caf50" stroke="#a8f0b0" stroke-width="2"/>`).join('')).join('')}
+  ${electron(320,120)}<text x="360" y="100" fill="#fff" font-size="22" font-family="Fredoka, Nunito, sans-serif">That's you!</text></svg>`);
+  const c=page(C1,'You are an electron.','You live in a chlorophyll molecule inside <b>Photosystem II</b>, in a thylakoid membrane. Your mission: ride the energy of sunlight all the way into a glucose molecule… and then get it back out as ATP inside a mitochondrion. Answer checkpoint questions along the way. First-try answers earn the most points.');
+  c.innerHTML='<p style="font-weight:800;margin:0 0 8px">Choose your journey:</p><div class="row" id="modes"></div>';
+  [['full','Full journey (both)'],['photo','Photosynthesis only'],['resp','Cellular respiration only']].forEach(([m,l],k)=>{ const b=document.createElement('button'); b.className='btn'+(k?'':' go'); b.textContent=l; $('#modes').appendChild(b);
+    b.onclick=()=>{ S.mode=m; S.order=ORDERS[m]; S.pos=0; next(); }; });
+},
+
+/* 1 catch light */
+()=>{ energy('low');
+  setScene(`<svg viewBox="0 0 1000 380" preserveAspectRatio="xMidYMid meet"><rect y="318" width="1000" height="62" fill="#2e7d3c"/><text x="20" y="358" fill="#cfe" font-size="22" font-family="Nunito, sans-serif" font-weight="800">Photosystem II (chlorophyll)</text></svg>`);
+  const c=page(C1,'Stage 1 · Catch the right light','Sunlight is hitting the leaf. Click <b>every photon that chlorophyll absorbs</b> to excite your electron. Careful: some wavelengths are just reflected.');
+  const list=shuffle([420,440,450,460,470,650,670,680,520,540,550,560,580]);
+  const colour=nm=>nm<455?'#7d6bff':nm<490?'#3f8cff':nm<530?'#2fcf7a':nm<565?'#5fd84a':nm<600?'#e3e23a':'#ff4136';
+  const need=list.filter(nm=>nm<500||nm>640).length;
+  c.innerHTML=`<div class="lbl">Excitement level (0 of ${need} absorbed)</div><div class="meter"><span id="m"></span></div>`;
+  let hits=0;
+  const grid=document.createElement('div');
+  grid.style.cssText='position:absolute;inset:12px 12px 70px;display:flex;flex-wrap:wrap;gap:12px;justify-content:center;align-content:center';
+  scene.appendChild(grid);
+  list.forEach((nm,i)=>{ const b=document.createElement('button');
+    b.className='photon'; b.style.cssText=`position:relative;top:auto;background:${colour(nm)};color:${colour(nm)};animation:pop .3s ${i*0.05}s both`;
+    b.innerHTML=`<span style="color:#111">${nm}<br>nm</span>`; b.setAttribute('aria-label',nm+' nanometre photon');
+    b.onclick=()=>{ if(hits>=need) return;
+      if(nm<500||nm>640){ hits++; add(2); b.disabled=true; b.style.opacity=.15; b.style.boxShadow='none';
+        $('#m').style.width=(hits/need*100)+'%'; document.querySelector('.lbl').textContent=`Excitement level (${hits} of ${need} absorbed)`;
+        fb(`<b>${nm} nm absorbed!</b> ${nm<500?'Blue–violet':'Red'} light is absorbed strongly by chlorophyll.`,true);
+        if(hits===need){ energy('HIGH ⚡'); fb('<b>Excited!</b> Chlorophyll absorbs blue–violet (400–500 nm) and red (600–700 nm) light. Your electron jumps to a high-energy state. The green and yellow light left over is reflected, which is why leaves look green.',true); nextBtn(); } }
+      else { add(-2); b.disabled=true; b.style.opacity=.3; fb(`<b>${nm} nm bounced off!</b> Chlorophyll absorbs very little green–yellow light (about 500–600 nm). It is reflected, which is why leaves look green.`,false); }
+    };
+    grid.appendChild(b); });
+},
+
+/* 2 electron transport chain + photolysis */
+()=>{
+  const stops={PSII:[150,'#3e9b4f'],PUMP:[350,'#e6a8d8'],PSI:[560,'#3e9b4f'],NADP:[730,'#e888c8'],SYN:[900,'#ff9a7a']};
+  const names={PSII:'PSII',PUMP:'Electron transport chain',PSI:'PSI',NADP:'Second ETC',SYN:'ATP synthase'};
+  let g=''; for(const k in stops){ if(k==='PUMP'||k==='NADP') continue; const [x,c]=stops[k]; g+=`<g class="stop" data-k="${k}" style="cursor:pointer"><rect x="${x-60}" y="125" width="120" height="130" rx="${k==='SYN'?16:44}" fill="${c}" stroke="#fff" stroke-width="3" opacity=".92"/><text x="${x}" y="196" text-anchor="middle" font-size="${names[k].length>12?14:names[k].length>8?17:22}" font-weight="800" fill="#1b1b1b" font-family="Nunito, sans-serif">${names[k]}</text></g>`}
+  g+=`<g class="stop" data-k="NADP" style="cursor:pointer"><rect x="672" y="130" width="116" height="122" rx="18" fill="#e6a8d8" fill-opacity=".22" stroke="#e6a8d8" stroke-width="3" stroke-dasharray="7 5"/>
+    <rect x="680" y="138" width="100" height="40" rx="7" fill="#3b2140"/><text x="730" y="155" text-anchor="middle" font-size="12.5" font-weight="800" fill="#fff">Electron</text><text x="730" y="171" text-anchor="middle" font-size="12.5" font-weight="800" fill="#fff">transport chain</text>
+    ${[705,755].map((x,i)=>`<circle cx="${x}" cy="212" r="18" fill="#c9a3e6" stroke="#fff" stroke-width="3"/><text x="${x}" y="218" text-anchor="middle" font-size="15" font-weight="800" fill="#1b1b1b">${i+1}</text>`).join('')}<path d="M723 212h14" stroke="#fff" stroke-width="3"/></g>`;
+  const etcX=[262,322,382,442];
+  g+=`<g class="stop" data-k="PUMP" style="cursor:pointer"><rect x="226" y="118" width="252" height="144" rx="22" fill="#e6a8d8" fill-opacity=".22" stroke="#e6a8d8" stroke-width="3" stroke-dasharray="8 5"/>
+    <rect x="240" y="130" width="224" height="26" rx="8" fill="#3b2140"/><text x="352" y="149" text-anchor="middle" font-size="17" font-weight="800" fill="#fff">Electron transport chain</text>
+    ${etcX.map((x,i)=>`<circle cx="${x}" cy="205" r="25" fill="${i===1?'#e6a8d8':'#c9a3e6'}" stroke="#fff" stroke-width="3"/><text x="${x}" y="212" text-anchor="middle" font-size="18" font-weight="800" fill="#1b1b1b">${i+1}</text>`).join('')}
+    ${etcX.slice(0,3).map(x=>`<path d="M${x+27} 205h6" stroke="#fff" stroke-width="3"/>`).join('')}
+</g>`;
+  setScene(membraneSVG('Stroma (Side 1)','Thylakoid lumen (Side 2)',g+'<g id="hp"></g><g id="ps2fx"></g><g id="phfx"></g>'+electron(150,100)));
+  const c=page(C1,'Stage 2 · Ride the transport chain','You\'re excited and ready to <b>leave Photosystem II</b>. Click the structure you travel to <b>next</b>. Watch your energy drop at each step.');
+  c.innerHTML='<div class="lbl">Electron energy</div><div class="meter"><span id="m" style="width:100%"></span></div><div id="sub" style="margin-top:12px"></div>';
+  const path=['PUMP','PSI','NADP']; let step=0, busy=false;
+  const move=k=>{ $('#e').setAttribute('transform',`translate(${stops[k][0]},100)`); };
+  const txt=(x,y,t,col,d)=>`<text x="${x}" y="${y}" fill="${col}" font-size="24" font-weight="800" style="animation:pop .4s ${d}s both">${t}</text>`;
+  function photolysis(){
+    scene.querySelector('#ps2fx').innerHTML='<circle id="hole" cx="150" cy="232" r="16" fill="#0c2318" stroke="#fff" stroke-width="3" stroke-dasharray="5 4"/>';
+    const sub=$('#sub'); sub.innerHTML='<p style="font-weight:800;margin:0 0 8px">Look back at PSII: it is now <u>missing the electron you took</u>. Every electron that leaves must be replaced. Which molecule does PSII split to get a new one?</p><div class="row" id="mol"></div>';
+    let tries=0;
+    shuffle([['CO₂',0],['H₂O',1],['Glucose',0],['O₂',0]]).forEach(([m,ok])=>{
+      const b=document.createElement('button'); b.className='btn'; b.innerHTML=m; $('#mol').appendChild(b);
+      b.onclick=()=>{ tries++;
+        if(!ok){ b.classList.add('no'); b.disabled=true; fb(`<b>Nope.</b> ${m} can't donate electrons to PSII. Think: what is split in the thylakoid lumen?`,false); return; }
+        if(tries===1) add(10); else S.missed.push('Photolysis of water at PSII');
+        b.classList.add('ok'); $('#mol').querySelectorAll('button').forEach(x=>x.disabled=true);
+        scene.querySelector('#ps2fx').insertAdjacentHTML('beforeend',txt(40,288,'H₂O →','#9fd8ff',0)+txt(120,288,'2 H⁺','#ffcc33',.2)+txt(40,320,'½ O₂ ↗','#9fd8ff',.4)+`<g id="newe" style="transition:transform 1.2s ease-in-out" transform="translate(230,312)"><circle r="16" fill="#ffe14d"/><text y="6" text-anchor="middle" font-size="16" font-weight="800" fill="#222">e⁻</text></g>`);
+        requestAnimationFrame(()=>requestAnimationFrame(()=>{ const n=scene.querySelector('#newe'); if(n) n.setAttribute('transform','translate(150,232)'); }));
+        later(()=>{ scene.querySelector('#hole').setAttribute('fill','#ffe14d'); scene.querySelector('#ps2fx').insertAdjacentHTML('beforeend',txt(182,290,'e⁻ replaced!','#ffe14d',0).replace('font-size="24"','font-size="18"')); },1300);
+        fb('<b>Photolysis at PSII!</b> In the thylakoid lumen, light energy splits water into H⁺ ions, oxygen gas and electrons. Watch the new electron from water move into PSII to <b>replace the one you took</b>. The H⁺ adds to the gradient in the lumen.',true);
+        const q=document.createElement('div'); q.style.marginTop='14px'; sub.appendChild(q);
+        ask(q,'Checkpoint: The O₂ a plant releases comes from which molecule?',['Water (H₂O)','Carbon dioxide (CO₂)','Glucose','ATP'],0,'Oxygen gas comes from splitting water, not from CO₂. <b>Now continue your journey: click your next stop.</b>',()=>{ busy=false; },'Source of O₂ (photolysis of water)');
+      };
+    });
+  }
+  function rexcite(){
+    const sub=$('#sub'); sub.innerHTML='<p style="font-weight:800;margin:0 0 8px">You\'re drained! You need a new photon to re-excite you.</p>';
+    const q=document.createElement('div'); sub.appendChild(q);
+    ask(q,'Where will the new photon be absorbed?',['Photosystem I (PSI)','The first electron transport chain','ATP synthase','The second electron transport chain'],0,'PSI has its own chlorophyll that absorbs light energy and passes it to your electron.',()=>{
+      const b=document.createElement('button'); b.className='btn go'; b.style.marginTop='10px'; b.textContent='Absorb a photon at PSI'; q.appendChild(b);
+      b.onclick=()=>{ b.remove();
+        let wave='M700 52'; for(let k=1;k<=24;k++){ const x=700-k*5.6, y=52+k*1.6+Math.sin(k*1.3)*9; wave+=` L${x.toFixed(1)} ${y.toFixed(1)}`; }
+        scene.querySelector('#phfx').innerHTML=`<g style="animation:pop .4s"><circle cx="740" cy="40" r="26" fill="#ffd23f"/>${[0,1,2,3,4,5,6,7].map(k=>{const a=k*Math.PI/4;return `<path d="M${(740+34*Math.cos(a)).toFixed(1)} ${(40+34*Math.sin(a)).toFixed(1)} L${(740+46*Math.cos(a)).toFixed(1)} ${(40+46*Math.sin(a)).toFixed(1)}" stroke="#ffd23f" stroke-width="4"/>`}).join('')}<text x="790" y="46" fill="#ffe14d" font-size="20" font-weight="800">Sun</text></g>
+          <path d="${wave}" fill="none" stroke="#ffe14d" stroke-width="5" stroke-dasharray="400" stroke-dashoffset="400" style="animation:draw .8s forwards"/><circle cx="560" cy="100" r="44" fill="#ffe14d" opacity=".25" style="animation:pop .6s .7s both"/><text x="610" y="128" fill="#ffe14d" font-size="18" font-weight="800" style="animation:pop .4s .8s both">re-excited!</text>`;
+        $('#e').setAttribute('transform','translate(560,86) scale(1.3)');
+        $('#m').style.width='100%'; energy('HIGH ⚡'); add(5); fb('<b>Re-excited by PSI!</b> Now you have enough energy to reduce NADP⁺. Click your next stop.',true); busy=false; };
+    },'Where photons are absorbed (PSI)');
+  }
+  scene.querySelectorAll('.stop').forEach(s=>s.onclick=()=>{ if(busy) return; const k=s.dataset.k;
+    if(k!==path[step]){ const hint={SYN:'ATP synthase moves H⁺ ions, not electrons.',PSII:'You just left PSII.',PSI:'Not yet: something has to use some of your energy first.',NADP:'Too soon! You still need more energy to reduce NADP⁺.',PUMP:'You already passed it.'}[k]; fb('<b>Wrong stop.</b> '+hint,false); add(-2); return; }
+    move(k); step++; busy=true;
+    if(k==='PUMP'){ $('#m').style.width='45%'; energy('medium');
+      etcX.forEach((x,i)=>later(()=>$('#e').setAttribute('transform',`translate(${x},100)`),i*450)); fb('You hop through the <b>four electron acceptors</b> of the electron transport chain. Redox reactions at each one release your energy bit by bit, and acceptor 2 uses that energy to pump H⁺.',true);
+      const sub=$('#sub'); sub.innerHTML=''; ask(sub,'Which way does the electron transport chain pump H⁺ ions?',['From the stroma (Side 1) into the thylakoid lumen (Side 2)','From the thylakoid lumen (Side 2) into the stroma (Side 1)'],0,'H⁺ is pumped into the lumen, building a high concentration there (low pH).',()=>{ $('#hp').innerHTML=[0,1,2,3,4].map(i=>`<text x="${300+i*25}" y="${300+(i%2)*30}" fill="#ffcc33" font-size="22" font-weight="800">H⁺</text>`).join(''); later(photolysis,1200); },'Direction of H⁺ pumping in chloroplasts');
+    }
+    if(k==='PSI'){ $('#m').style.width='15%'; energy('low'); fb('You arrive at PSI with very little energy left.',true); rexcite(); }
+    if(k==='NADP'){ energy('stored'); $('#m').style.width='70%';
+      [705,755].forEach((x,i)=>later(()=>$('#e').setAttribute('transform',`translate(${x},100)`),i*400));
+      later(()=>{ $('#e').setAttribute('transform','translate(730,70)'); scene.querySelector('#phfx').innerHTML='<text x="465" y="78" fill="#ff9ac8" font-size="22" font-weight="800" style="animation:pop .4s">NADP⁺ + H⁺ → NADPH</text>'; },850);
+      fb('You pass through a <b>second, shorter electron transport chain</b>, which hands you to NADP⁺. <b>NADP⁺ + 2e⁻ + H⁺ → NADPH.</b> You are now riding inside NADPH, a high-energy electron carrier headed for the Calvin cycle.',true);
+      const sub=$('#sub'); sub.innerHTML=''; ask(sub,'Checkpoint: Which path did you just take?',['H₂O → PSII → ETC → PSI → second ETC → NADP⁺','H₂O → PSI → ETC → PSII → second ETC → NADP⁺','NADPH → PSI → ETC → PSII → H₂O','H₂O → PSII → ATP synthase → PSI → second ETC → NADP⁺'],0,'Electrons from water go through PSII, the first ETC, PSI, a second short ETC, and end on NADP⁺.',()=>nextBtn(),'Order of the light-dependent reactions');
+    }
+  });
+},
+
+/* 4 chemiosmosis */
+()=>{
+  let H=14; const hs=()=>Array.from({length:H},(_,i)=>`<text x="${80+(i%7)*95}" y="${290+Math.floor(i/7)*45}" fill="#ffcc33" font-size="24" font-weight="800" font-family="Nunito, sans-serif">H⁺</text>`).join('');
+  const draw=()=>setScene(membraneSVG('Stroma (Side 1)','Thylakoid lumen (Side 2)',`<g id="syn" style="cursor:pointer"><rect x="800" y="110" width="110" height="160" rx="18" fill="#ff9a7a" stroke="#fff" stroke-width="3"/><g transform="translate(855,95)"><g class="spin" style="animation-play-state:paused" id="rot"><circle r="40" fill="#ffb59f" stroke="#fff" stroke-width="3"/><path d="M-40 0H40M0-40V40" stroke="#c0563c" stroke-width="6"/></g></g><text x="855" y="200" text-anchor="middle" font-weight="800" font-size="18" fill="#2a120c">ATP</text><text x="855" y="222" text-anchor="middle" font-weight="800" font-size="18" fill="#2a120c">synthase</text></g>${hs()}`));
+  draw();
+  const c=page(C1,'Stage 3 · Chemiosmosis','H⁺ ions have piled up in the lumen. Before you open the gate, answer the question.');
+  c.innerHTML='<div id="q"></div><div id="go"></div>';
+  ask($('#q'),'H⁺ ions flow through ATP synthase…',['from the lumen (high H⁺) to the stroma (low H⁺)','from the stroma (high H⁺) to the lumen (low H⁺)','in both directions equally'],0,'They flow down their concentration gradient. That flow powers ATP synthase.',()=>{
+    let made=0; $('#go').innerHTML='<p class="mission" style="margin-top:12px"><b>Click ATP synthase</b> (in the scene) to let 3 H⁺ through at a time. Make 4 ATP.</p>';
+    scene.querySelector('#syn').onclick=function h(){ if(H<3) return; H-=3; made++; S.atp++; hud(); draw(); const r=scene.querySelector('#rot'); r.style.animationPlayState='running'; later(()=>r.style.animationPlayState='paused',600); scene.querySelector('#syn').onclick=h;
+      if(made===4){ scene.querySelector('#syn').onclick=null; fb('<b>4 ATP made!</b> ADP + Pᵢ → ATP in the stroma, ready for the Calvin cycle. If the membrane were leaky to H⁺, the gradient would vanish and ATP production would drop.',true); nextBtn(); } };
+  },'Direction of H⁺ through ATP synthase');
+},
+
+/* 4 calvin cycle */
+()=>{
+  scene.style.height='clamp(300px,58vw,500px)';
+  const rowsY=[100,140,180,220,260,300];           // 6 3-PGA / G3P rows
+  const co2Y=[120,200,280];                         // 3 CO2 + RuBP rows
+  setScene(`<svg viewBox="0 0 1000 480" preserveAspectRatio="xMidYMid meet" font-family="Nunito, sans-serif" font-weight="800">
+  <text x="20" y="36" fill="#9fd8ff" font-size="24" font-family="Fredoka, Nunito, sans-serif">① Carbon fixation</text>
+  <text x="300" y="70" fill="#fff" opacity=".7" font-size="17">3-PGA</text>
+  <text x="20" y="470" fill="#fff" opacity=".55" font-size="18">Stroma</text>
+  <g id="fix"></g><g id="act"></g><g id="red"></g><g id="g3p"></g><g id="ret"></g><g id="out"></g>
+  <text id="lab2" x="420" y="40" fill="#9fd8ff" font-size="24" font-family="Fredoka, Nunito, sans-serif" opacity=".25">② Activation &amp; reduction</text>
+  <text id="lab3" x="760" y="400" fill="#9fd8ff" font-size="22" font-family="Fredoka, Nunito, sans-serif" opacity=".25"><tspan x="760">③ Replacement</tspan><tspan x="760" dy="26">of RuBP</tspan></text>
+  </svg>`);
+  const svg=scene.querySelector('svg'), G=id=>svg.querySelector('#'+id);
+  const trio=(x,y,col,spark)=>[0,1,2].map(i=>`<circle cx="${x+i*16}" cy="${y}" r="7" fill="${col}" stroke="#fff" stroke-width="1.5"/>`).join('')+(spark?`<path d="M${x-4} ${y-16}l-3-5M${x+16} ${y-17}v-6M${x+36} ${y-16}l3-5" stroke="#ffcc33" stroke-width="2.5"/>`:'');
+  const t=(x,y,s,col='#fff',size=19)=>`<text x="${x}" y="${y}" fill="${col}" font-size="${size}">${s}</text>`;
+  const c=page(C1,'Stage 4 · The Calvin cycle','Your NADPH and the new ATP arrive in the <b>stroma</b>. Build the cycle step by step, just like the whiteboard diagram. One run of the cycle fixes <b>3 CO₂</b>.');
+  c.innerHTML='<div id="ph"></div>';
+  const ph=$('#ph');
+  const buttons=(list,onPick)=>{ const r=document.createElement('div'); r.className='row'; r.style.marginTop='10px'; ph.appendChild(r);
+    shuffle(list).forEach(([label,ok,why])=>{ const b=document.createElement('button'); b.className='btn'; b.innerHTML=label; r.appendChild(b);
+      b.onclick=()=>{ if(!ok){ add(-2); b.classList.add('no'); b.disabled=true; fb('<b>Not that one.</b> '+why,false); return; } onPick(b,r); }; });
+    return r; };
+  const say=h=>ph.insertAdjacentHTML('beforeend',`<p style="font-weight:800;margin:14px 0 4px">${h}</p>`);
+
+  /* phase 1: carbon fixation */
+  say('① Carbon fixation: attach CO₂ to RuBP. Do it 3 times.');
+  let fixed=0;
+  buttons([['Add CO₂ to RuBP',1],['Add O₂ to RuBP',0,'O₂ is a product of the light reactions, not what the Calvin cycle fixes.'],['Add H₂O to RuBP',0,'Water is split in the light reactions, not fixed here.']],(b,r)=>{
+    if(fixed>=3) return; const y=co2Y[fixed];
+    G('fix').insertAdjacentHTML('beforeend',`<g style="animation:pop .4s">${t(28,y+7,'CO₂ + RuBP','#fff',22)}<path d="M168 ${y} L200 ${y} M200 ${y} L225 ${rowsY[fixed*2]} M200 ${y} L225 ${rowsY[fixed*2+1]}" stroke="#fff" stroke-width="2.5" fill="none"/>${trio(300,rowsY[fixed*2],'#bfe6c4')}${trio(300,rowsY[fixed*2+1],'#bfe6c4')}</g>`);
+    fixed++; add(2);
+    if(fixed===3){ r.querySelectorAll('button').forEach(x=>x.disabled=true);
+      G('fix').insertAdjacentHTML('beforeend',`<path d="M70 318h80M110 318v10" stroke="#fff" stroke-width="2"/>${t(70,350,'rubisco','#fff',17)}`);
+      fb('3 CO₂ + 3 RuBP → <b>6 molecules of 3-PGA</b> (three carbons each).',true);
+      const q=document.createElement('div'); q.style.marginTop='10px'; ph.appendChild(q);
+      ask(q,'Which enzyme attaches CO₂ to RuBP?',['Rubisco','ATP synthase','Photosystem I','NADP⁺ reductase'],0,'Rubisco fixes carbon from CO₂ onto RuBP.',phase2,'Rubisco / carbon fixation');
+    } });
+
+  /* phase 2: activation (ATP) then reduction (NADPH) */
+  function phase2(){ G('lab2').setAttribute('opacity','1'); ph.innerHTML='';
+    say('② Activation &amp; reduction: first <u>activate</u> the 3-PGA, then <u>reduce</u> it.');
+    let stepN=0;
+    buttons([['+ 6 ATP',1],['+ 6 NADPH',1],['+ 6 NADH',0,'NADH is the carrier from cellular respiration. Plants use NADPH here.'],['+ 6 O₂',0,'O₂ is not used in the Calvin cycle.']],(b,r)=>{
+      const isATP=b.textContent.includes('ATP');
+      if(stepN===0&&!isATP){ add(-2); fb('<b>Activation comes first.</b> 3-PGA must be energized by ATP before NADPH can reduce it.',false); return; }
+      if(stepN===1&&isATP){ fb('Already activated. Now reduce it.',false); return; }
+      b.classList.add('ok'); b.disabled=true; add(3);
+      if(stepN===0){ S.atp=Math.max(0,S.atp-6); hud();
+        G('act').innerHTML=rowsY.map(y=>`<g style="animation:pop .4s">${t(365,y+6,'+ ATP →','#ffcc33',18)}${trio(460,y,'#ffd966',true)}</g>`).join('');
+        fb('<b>Activation:</b> ATP energizes each 3-PGA.',true); stepN=1; }
+      else { r.querySelectorAll('button').forEach(x=>x.disabled=true);
+        G('red').innerHTML=rowsY.map(y=>`<g style="animation:pop .4s">${t(525,y+6,'+ NADPH →','#9fd8ff',18)}</g>`).join('');
+        G('g3p').innerHTML=`<rect x="680" y="80" width="80" height="240" fill="none" stroke="#9fd8ff" stroke-width="3" rx="6"/>`+rowsY.map((y,i)=>`<text id="g${i}" x="720" y="${y+7}" text-anchor="middle" fill="#fff" font-size="20" style="animation:pop .4s ${i*.08}s both">G3P</text>`).join('');
+        fb('<b>Reduction:</b> NADPH supplies hydrogen and electrons. 6 G3P made! NADPH supplies the hydrogen, and 3-PGA (from CO₂) supplies the carbon and oxygen.',true);
+        phase3(); }
+    }); }
+
+  /* phase 3: one G3P leaves, 5 rebuild RuBP */
+  function phase3(){
+    const q=document.createElement('div'); q.style.marginTop='12px'; ph.appendChild(q);
+    ask(q,'How many of the 6 G3P leave the cycle to help build glucose?',['1','2','3','6'],0,'Only 1 G3P leaves. The other 5 are recycled to rebuild RuBP.',()=>{
+      G('out').innerHTML=`<g style="animation:pop .4s"><path d="M765 93 h40" stroke="#ffcc33" stroke-width="3"/>${t(812,99,'1 G3P out','#ffcc33',18)}</g>`;
+      svg.querySelector('#g0').setAttribute('fill','#ffcc33');
+      G('lab3').setAttribute('opacity','1'); ph.innerHTML='';
+      say('③ Replacement of RuBP: what powers the 5 G3P to rebuild 3 RuBP?');
+      buttons([['+ 3 ATP',1],['+ 3 NADPH',0,'NADPH was used for reduction. Rebuilding RuBP uses ATP.'],['+ 3 CO₂',0,'CO₂ is added in step ①, not here.']],(b,r)=>{
+        r.querySelectorAll('button').forEach(x=>x.disabled=true); b.classList.add('ok'); add(3); S.atp=Math.max(0,S.atp-3); hud();
+        G('ret').innerHTML=`<path d="M720 322 C 720 400, 600 410, 400 405 S 200 380, 205 300" fill="none" stroke="#5b8cff" stroke-width="4"/><path d="M196 312 L205 296 L216 310" fill="none" stroke="#5b8cff" stroke-width="4"/>${t(560,450,'← 3 ATP','#ffcc33',20)}${t(610,370,'5 G3P','#9fd8ff',18)}`;
+        fb('5 G3P + 3 ATP → <b>3 RuBP</b>, ready to fix more CO₂. The cycle is complete!',true);
+        runs();
+      }); },'G3P leaving the cycle'); }
+
+  /* how many runs? then glucose */
+  function runs(){ ph.innerHTML='';
+    const q=document.createElement('div'); q.style.marginTop='12px'; ph.appendChild(q);
+    q.innerHTML='<p style="font-weight:800;margin:0 0 8px">One glucose needs <u>2 G3P</u>. How many times must this cycle (3 CO₂ each time) run to make one glucose?</p><div class="row"><input class="num" id="n" type="number" inputmode="numeric" aria-label="number of runs"><button class="btn go" id="chk">Check</button></div>';
+    let tr=0; $('#chk').onclick=()=>{ tr++;
+      if(+$('#n').value===2){ if(tr===1) add(10); q.querySelectorAll('input,button').forEach(x=>x.disabled=true);
+        fb('<b>Twice!</b> Each run releases 1 G3P, so 2 runs give 2 G3P, enough for one glucose. That means 6 CO₂ in total, one for each carbon in C₆H₁₂O₆.',true);
+        const b=document.createElement('button'); b.className='btn go'; b.style.marginTop='10px'; b.textContent='Run the cycle a second time'; q.appendChild(b);
+        b.onclick=()=>{ b.remove(); svg.style.transition='opacity .3s'; svg.style.opacity='.35';
+          later(()=>{ svg.style.opacity='1';
+            G('out').insertAdjacentHTML('beforeend',`<g style="animation:pop .5s"><polygon points="860,150 890,135 920,150 920,180 890,195 860,180" fill="#ffcc33"/>${t(840,225,'G3P + G3P','#fff',17)}${t(845,250,'= glucose!','#ffcc33',20)}</g>`);
+            energy('stored in glucose'); S.atp=Math.max(0,S.atp-9); hud();
+            const q2=document.createElement('div'); q2.style.marginTop='12px'; ph.appendChild(q2);
+            ask(q2,'The leftover ADP + Pᵢ and NADP⁺ are sent where?',['Back to the thylakoid membrane to be recharged','To the mitochondria','Out of the leaf through the stomata','Into the glucose molecule'],0,'They return to the light-dependent reactions to be turned back into ATP and NADPH.',()=>nextBtn(),'Recycling ADP/NADP⁺');
+          },700); };
+      } else { fb('Each run of the cycle releases only 1 G3P. How many runs give 2 G3P?',false); if(tr===2) S.missed.push('Calvin cycle runs per glucose'); } };
+  }
+},
+
+/* 6 chapter 1 checkpoint */
+()=>{
+  setScene(`<svg viewBox="0 0 1000 380" preserveAspectRatio="xMidYMid meet"><text x="500" y="170" text-anchor="middle" font-size="52" fill="#ffcc33" font-family="Fredoka, Nunito, sans-serif">Checkpoint 1</text><text x="500" y="230" text-anchor="middle" font-size="24" fill="#cfe" font-family="Nunito, sans-serif">Answer all three to leave the chloroplast</text></svg>`);
+  const c=page(C1,'Chloroplast checkpoint','Three exam-style questions. Points only count on the first try.');
+  const qs=[
+   ['When a leaf is in bright light, the pH of the thylakoid lumen compared to the stroma is…',['lower, because H⁺ is pumped into the lumen','higher, because H⁺ is pumped into the lumen','the same, because H⁺ moves freely'],0,'More H⁺ means a lower pH.','pH of lumen vs stroma'],
+   ['If CO₂ supply is cut off but the light stays on, what builds up in the stroma first?',['ATP and NADPH','ADP and NADP⁺','Glucose','Water'],0,'The Calvin cycle stops, so ATP and NADPH aren\'t used up.','Effect of no CO₂'],
+   ['A herbicide makes thylakoid membranes leaky to H⁺. The most immediate effect is…',['less ATP is produced','photolysis stops','chlorophyll stops absorbing light','more CO₂ is fixed'],0,'No H⁺ gradient means ATP synthase can\'t make ATP.','Leaky membrane / chemiosmosis']];
+  let i=0; const go=()=>{ if(i>=qs.length){ nextBtn('Into the mitochondrion →'); return } const d=document.createElement('div'); d.style.marginTop=i?'18px':'0'; c.appendChild(d); const q=qs[i++]; ask(d,`${i}. ${q[0]}`,q[1],q[2],q[3],go,q[4]); }; go();
+},
+
+/* 7 glycolysis */
+()=>{ document.body.className='mito'; energy('stored in glucose'); S.atp=2; hud();
+  setScene(`<svg viewBox="0 0 1000 380" preserveAspectRatio="xMidYMid meet"><text x="20" y="34" fill="#fff" opacity=".75" font-size="22" font-weight="800" font-family="Nunito, sans-serif">?</text>
+  <g id="glc">${[0,1,2,3,4,5].map(i=>`<circle cx="${380+i*48}" cy="190" r="20" fill="#ffc94a" stroke="#fff" stroke-width="3"/>`).join('')}</g><g id="gx"></g></svg>`);
+  const c=page(C2,'Stage 5 · Glycolysis','Your glucose has been eaten by an animal cell. You\'ve been given <b>2 ATP</b> to start. First: where does glycolysis happen?');
+  c.innerHTML='<div id="q"></div><div id="act"></div>';
+  ask($('#q'),'Glycolysis takes place in the…',['cytoplasm','mitochondrial matrix','inner mitochondrial membrane','thylakoid'],0,'Glycolysis happens in the cytoplasm and does not need oxygen.',()=>{
+    scene.querySelector('text').textContent='Cytoplasm';
+    const a=$('#act'); a.innerHTML='<p class="mission" style="margin-top:12px">Step 1: <b>Invest energy</b> to destabilize glucose.</p><button class="btn go" id="inv">Spend 2 ATP</button>';
+    $('#inv').onclick=()=>{ S.atp-=2; hud(); scene.querySelector('#glc').innerHTML=[0,1,2].map(i=>`<circle cx="${250+i*48}" cy="190" r="20" fill="#ffc94a" stroke="#fff" stroke-width="3"/>`).join('')+[0,1,2].map(i=>`<circle cx="${600+i*48}" cy="190" r="20" fill="#ffc94a" stroke="#fff" stroke-width="3"/>`).join('')+'<text x="298" y="250" text-anchor="middle" fill="#fff" font-size="20">pyruvate</text><text x="648" y="250" text-anchor="middle" fill="#fff" font-size="20">pyruvate</text>';
+      a.innerHTML='<p class="mission" style="margin-top:12px">Glucose split into 2 three-carbon pyruvates! Step 2: <b>click every product bubble</b> (they wait for you).</p><div class="tally" id="t"></div>';
+      const prods=shuffle(['ATP','ATP','ATP','ATP','NADH','NADH']); let out=0;
+      const box=document.createElement('div'); box.style.cssText='position:absolute;left:0;right:0;bottom:18px;display:flex;flex-wrap:wrap;gap:12px;justify-content:center'; scene.appendChild(box);
+      prods.forEach((p,i)=>{ const b=document.createElement('button'); b.className='chip'; b.textContent=p; b.style.cssText=`position:relative;background:${p==='ATP'?'#ffc94a':'#8fd3ff'};animation:pop .3s ${i*0.12}s both`; box.appendChild(b);
+        b.onclick=()=>{ add(2); if(p==='ATP'){S.atp++;hud()} $('#t').insertAdjacentHTML('beforeend',`<span>${p}</span>`); b.remove(); out++; if(out===prods.length) done(); };
+      });
+      function done(){ const q=document.createElement('div'); q.style.marginTop='10px'; a.appendChild(q);
+        q.innerHTML='<p style="font-weight:800;margin:0 0 8px">What is the <u>net</u> ATP gain from glycolysis per glucose?</p><div class="row"><input class="num" id="n" type="number" inputmode="numeric" aria-label="net ATP"><button class="btn go" id="chk">Check</button></div>';
+        let tr=0; $('#chk').onclick=()=>{ tr++; if(+$('#n').value===2){ if(tr===1) add(10); q.querySelectorAll('input,button').forEach(x=>x.disabled=true); fb('<b>Net 2 ATP:</b> 4 made − 2 invested. Plus 2 NADH and 2 pyruvate.',true); nextBtn(); } else { fb('Made 4, but you spent 2 to start…',false); if(tr===2) S.missed.push('Net ATP from glycolysis'); } };
+      }
+    };
+  },'Location of glycolysis');
+},
+
+/* 8 pyruvate oxidation */
+()=>{
+  setScene(`<svg viewBox="0 0 1000 380" preserveAspectRatio="xMidYMid meet">${mito(500,200,470,178)}<text x="500" y="118" text-anchor="middle" fill="#fff" opacity=".7" font-size="22" font-weight="800">Mitochondrial matrix</text>
+  <g id="pyr">${[0,1,2].map(i=>`<circle cx="${430+i*55}" cy="200" r="22" fill="#ffc94a" stroke="#fff" stroke-width="3"/>`).join('')}</g><g id="px"></g></svg>`);
+  const c=page(C2,'Stage 6 · Pyruvate oxidation','Each pyruvate is carried into the <b>mitochondrial matrix</b>. Do the three steps <b>in order</b>.');
+  c.innerHTML='<div class="row" id="steps"></div><div id="q" style="margin-top:12px"></div>';
+  const order=['Remove 1 CO₂','Transfer electrons to NAD⁺','Attach Coenzyme A']; let s=0;
+  shuffle(order).forEach(t=>{ const b=document.createElement('button'); b.className='btn'; b.textContent=t; $('#steps').appendChild(b);
+    b.onclick=()=>{ if(t!==order[s]){ add(-2); b.classList.add('no'); later(()=>b.classList.remove('no'),400); fb('<b>Out of order.</b> Pyruvate has 3 carbons, so what has to leave first to make a 2-carbon molecule?',false); return; }
+      s++; b.classList.add('ok'); b.disabled=true; const px=scene.querySelector('#px');
+      if(s===1){ scene.querySelector('#pyr').lastElementChild.remove(); px.insertAdjacentHTML('beforeend','<text x="650" y="150" fill="#ddd" font-size="26" font-weight="800" style="animation:pop .4s">CO₂ ↗</text>'); fb('A carbon leaves as CO₂.',true); }
+      if(s===2){ px.insertAdjacentHTML('beforeend','<text x="300" y="290" fill="#8fd3ff" font-size="26" font-weight="800" style="animation:pop .4s">NAD⁺ → NADH</text>'); fb('High-energy electrons and H⁺ move onto NAD⁺.',true); }
+      if(s===3){ px.insertAdjacentHTML('beforeend','<rect x="540" y="182" width="70" height="36" rx="8" fill="#ff7a59"/><text x="575" y="208" text-anchor="middle" font-size="20" font-weight="800" fill="#fff">CoA</text>'); fb('<b>Acetyl-CoA formed!</b> (The second pyruvate does the same thing.)',true);
+        ask($('#q'),'In this step, pyruvate is ___ and NAD⁺ is ___.',['oxidized; reduced','reduced; oxidized','oxidized; oxidized','reduced; reduced'],0,'Pyruvate loses electrons (oxidized); NAD⁺ gains them (reduced) to become NADH. Remember OIL RIG.',()=>nextBtn(),'Redox in pyruvate oxidation'); }
+    }; });
+},
+
+/* 9 krebs */
+()=>{
+  setScene(`<svg viewBox="0 0 1000 380" preserveAspectRatio="xMidYMid meet">${mito(500,190,490,185)}<text x="500" y="58" text-anchor="middle" fill="#fff" opacity=".75" font-size="20" font-weight="800">Mitochondrial matrix</text><g transform="translate(500,190)"><g class="spin"><path d="M0-120A120 120 0 0 1 120 0" fill="none" stroke="#a56cff" stroke-width="26"/><path d="M120 0A120 120 0 0 1 0 120" fill="none" stroke="#8b4fe6" stroke-width="26"/><path d="M0 120A120 120 0 0 1 -120 0" fill="none" stroke="#a56cff" stroke-width="26"/><path d="M-120 0A120 120 0 0 1 0-120" fill="none" stroke="#8b4fe6" stroke-width="26"/></g><text text-anchor="middle" y="-6" font-size="30" fill="#fff" font-family="Fredoka, Nunito, sans-serif">Krebs</text><text text-anchor="middle" y="28" font-size="30" fill="#fff" font-family="Fredoka, Nunito, sans-serif">cycle</text></g></svg>`);
+  const c=page(C2,'Stage 7 · Spin the Krebs cycle','Acetyl-CoA enters the cycle. Products pop out around the cycle. Click only the <b>real Krebs cycle products</b>. Decoys cost points! There are 2 turns, one for each acetyl-CoA.');
+  c.innerHTML='<div class="tally" id="t"></div><div id="q"></div>';
+  const tally={NADH:0,FADH2:0,ATP:0,CO2:0};
+  const real=['NADH','NADH','NADH','FADH₂','ATP','CO₂','CO₂'], fake=[['NADPH','NADPH is a photosynthesis carrier.'],['O₂','Oxygen isn\'t made here. It\'s used at the end of the ETC.'],['Glucose','Glucose is broken down, not made, in respiration.']];
+  let turn=0, pending=0;
+  const renderT=()=>$('#t').innerHTML=`<span>NADH: ${tally.NADH}</span><span>FADH₂: ${tally.FADH2}</span><span>ATP: ${tally.ATP}</span><span>CO₂: ${tally.CO2}</span><span>Turn ${Math.min(turn,2)}/2</span>`;
+  const key=p=>({'FADH₂':'FADH2','CO₂':'CO2'})[p]||p;
+  function runTurn(){ turn++; renderT(); const list=shuffle([...real.map(r=>[r,1]),...shuffle(fake).slice(0,2).map(f=>[f[0],0,f[1]])]); pending=real.length;
+    scene.querySelectorAll('.chip').forEach(x=>x.remove());
+    list.forEach(([p,ok,why],i)=>{ const b=document.createElement('button'); b.className='chip'; b.textContent=p; b.style.background=ok?({NADH:'#8fd3ff','FADH₂':'#9be7c4',ATP:'#ffc94a','CO₂':'#ddd'})[p]:['#8fd3ff','#ffc94a','#ddd'][i%3];
+      const ang=-Math.PI/2+i*2*Math.PI/list.length; b.style.left=`calc(50% + ${Math.cos(ang)*36}% - 36px)`; b.style.top=`calc(50% + ${Math.sin(ang)*40}% - 16px)`; b.style.animationDelay=(i*0.08)+'s'; scene.appendChild(b);
+      b.onclick=()=>{ if(ok){ b.remove(); tally[key(p)]++; add(2); if(p==='ATP'){S.atp++;hud()} renderT(); pending--; if(pending===0) turnDone(); } else { add(-3); b.disabled=true; b.style.opacity=.3; fb('<b>Decoy!</b> '+why,false); } };
+    }); }
+  function turnDone(){ if(turn<2){ fb('Turn 1 done. CoA is released and the cycle resets: the product of step 8 is the reactant for step 1. Here comes the second acetyl-CoA…',true); later(runTurn,1600); return; }
+    fb('<b>Both turns done!</b> Per glucose, the Krebs cycle makes 6 NADH, 2 FADH₂, 2 ATP and 4 CO₂.',true);
+    const q=$('#q'); q.innerHTML='<p style="font-weight:800;margin:12px 0 8px">From one glucose (2 turns), how many reduced electron carriers (NADH <u>plus</u> FADH₂) does the <u>Krebs cycle</u> make?</p><div class="row"><input class="num" id="n" type="number" inputmode="numeric" aria-label="Krebs carriers"><button class="btn go" id="chk">Check</button></div>';
+    let tr=0; $('#chk').onclick=()=>{ tr++; if(+$('#n').value===8){ if(tr===1) add(10); q.querySelectorAll('input,button').forEach(x=>x.disabled=true); fb('<b>8!</b> Each turn makes 3 NADH + 1 FADH₂, and there are 2 turns per glucose: 6 NADH + 2 FADH₂.',true); nextBtn(); } else { fb('Each turn makes 3 NADH and 1 FADH₂. How many turns per glucose?',false); if(tr===2) S.missed.push('Krebs cycle NADH + FADH₂'); } };
+  }
+  renderT(); later(runTurn,600);
+},
+
+/* 10 ETC */
+()=>{
+  const xs=[180,360,540]; let g=xs.map((x,i)=>`<rect x="${x-55}" y="130" width="110" height="120" rx="40" fill="${['#c4e86b','#4caf72','#e8f0b8'][i]}" stroke="#fff" stroke-width="3"/><text x="${x}" y="198" text-anchor="middle" font-size="20" font-weight="800" fill="#1d1d1d">Carrier ${i+1}</text>`).join('');
+  g+=`<g id="syn" style="cursor:pointer"><rect x="800" y="110" width="110" height="160" rx="18" fill="#8e44ad" stroke="#fff" stroke-width="3"/><g transform="translate(855,95)"><g class="spin" style="animation-play-state:paused" id="rot"><circle r="40" fill="#b57edc" stroke="#fff" stroke-width="3"/><path d="M-40 0H40M0-40V40" stroke="#5b2470" stroke-width="6"/></g></g><text x="855" y="200" text-anchor="middle" font-weight="800" font-size="18" fill="#fff">ATP</text><text x="855" y="222" text-anchor="middle" font-weight="800" font-size="18" fill="#fff">synthase</text></g><g id="hp"></g><g id="end"></g>`;
+  setScene(membraneSVG('Matrix','?',g+electron(70,100),'#ff9ac8'));
+  const c=page(C2,'Stage 8 · The electron transport chain','You ride an NADH to the <b>inner mitochondrial membrane</b>. NADH is oxidized and drops you off. Click <b>Hop</b> to move carrier to carrier.');
+  c.innerHTML='<div class="lbl">Electron energy</div><div class="meter"><span id="m" style="width:100%"></span></div><div class="row" style="margin-top:12px"><button class="btn go" id="hop">Hop →</button></div><div id="q" style="margin-top:12px"></div>';
+  let i=0; energy('HIGH ⚡');
+  $('#hop').onclick=()=>{ if(i<3){ $('#e').setAttribute('transform',`translate(${xs[i]},100)`); i++; $('#m').style.width=(100-i*28)+'%';
+      scene.querySelector('#hp').insertAdjacentHTML('beforeend',[0,1,2].map(k=>`<text x="${xs[i-1]-40+k*30}" y="${300+(k%2)*28}" fill="#ffc94a" font-size="22" font-weight="800">H⁺</text>`).join(''));
+      if(i===1){ $('#hop').disabled=true; ask($('#q'),'Your released energy pumps H⁺ ions. Where do they go?',['Into the intermembrane space','Into the matrix','Into the cytoplasm','Into the thylakoid lumen'],0,'H⁺ builds up in the intermembrane space. Compare: the thylakoid lumen in chloroplasts.',()=>{ scene.querySelectorAll('svg text')[1].textContent='Intermembrane space'; $('#hop').disabled=false; },'H⁺ location in mitochondria'); }
+      if(i===3){ $('#hop').disabled=true; energy('low'); $('#q').innerHTML=''; ask($('#q'),'You\'re out of energy at the end of the chain. What is the final by-product formed?',['Water (H₂O)','Carbon dioxide (CO₂)','Oxygen (O₂)','NADH'],0,'Oxygen is the final electron acceptor: low-energy electrons + O₂ + H⁺ → water. That\'s why we need to breathe!',()=>{
+          scene.querySelector('#end').innerHTML='<text x="660" y="90" fill="#8fd3ff" font-size="26" font-weight="800" style="animation:pop .5s">O₂ + e⁻ + H⁺ → H₂O</text>';
+          $('#q').insertAdjacentHTML('beforeend','<p class="mission" style="margin-top:12px"><b>Now click ATP synthase</b> again and again to cash in the H⁺ gradient.</p><div class="lbl">ATP from the ETC</div><div class="meter"><span id="ma"></span></div>');
+          let made=0; scene.querySelector('#syn').onclick=()=>{ if(made>=32) return; made=Math.min(32,made+4); S.atp+=4; hud(); $('#ma').style.width=(made/32*100)+'%'; const r=scene.querySelector('#rot'); r.style.animationPlayState='running'; later(()=>r.style.animationPlayState='paused',500);
+            if(made===32){ const q2=document.createElement('div'); q2.style.marginTop='12px'; $('#q').appendChild(q2);
+              q2.innerHTML='<p style="font-weight:800;margin:0 0 8px">ETC made 32 ATP. What is the <u>total</u> ATP yield from one glucose in aerobic respiration?</p><div class="row"><input class="num" id="n" type="number" inputmode="numeric" aria-label="total ATP"><button class="btn go" id="chk">Check</button></div>';
+              let tr=0; $('#chk').onclick=()=>{ tr++; if(+$('#n').value===36){ if(tr===1) add(10); q2.querySelectorAll('input,button').forEach(x=>x.disabled=true); fb('<b>36 ATP:</b> 2 (glycolysis) + 2 (Krebs) + 32 (ETC).',true); nextBtn(); } else { fb('Add the ATP from glycolysis and Krebs to the 32.',false); if(tr===2) S.missed.push('Total ATP per glucose'); } }; } };
+        },'Final by-product of the ETC (water)'); }
+    } };
+},
+
+/* 11 sprint crisis */
+()=>{
+  setScene(`<svg viewBox="0 0 1000 380" preserveAspectRatio="xMidYMid meet"><text x="500" y="70" text-anchor="middle" fill="#ff7a6b" font-size="34" font-family="Fredoka, Nunito, sans-serif">⚠ OXYGEN LOW ⚠</text>
+  <text x="500" y="115" text-anchor="middle" fill="#fff" opacity=".8" font-size="22">Your cell is in a football player's leg, sprint #10</text>
+  <g font-family="Nunito, sans-serif" font-weight="800" font-size="22"><rect x="120" y="160" width="220" height="70" rx="14" fill="#5a2a4c" stroke="#ff7a6b" stroke-width="3"/><text x="230" y="203" text-anchor="middle" fill="#fff">ETC: stopped ✖</text>
+  <rect x="390" y="160" width="220" height="70" rx="14" fill="#5a2a4c" stroke="#ff7a6b" stroke-width="3"/><text x="500" y="203" text-anchor="middle" fill="#fff">NADH piling up</text>
+  <rect x="660" y="160" width="220" height="70" rx="14" fill="#5a2a4c" stroke="#ff7a6b" stroke-width="3"/><text x="770" y="203" text-anchor="middle" fill="#fff">NAD⁺: 0 left</text></g>
+  <text x="500" y="300" text-anchor="middle" fill="#ffc94a" font-size="26" font-family="Fredoka, Nunito, sans-serif">Glycolysis is about to stall…</text></svg>`);
+  const c=page(C2,'Stage 9 · Sprint crisis!','Blood can\'t deliver oxygen fast enough. With no O₂ to accept electrons, the ETC stops. Then NADH can\'t unload, and NAD⁺ runs out. <b>Save the cell\'s ATP supply!</b>');
+  const qs=[
+   ['How can the muscle cell keep glycolysis running?',['Pass H from NADH onto pyruvate, making lactic acid and regenerating NAD⁺','Run the Krebs cycle faster','Turn pyruvate into ethanol and CO₂','Make oxygen from water'],0,'Lactic acid fermentation recycles NAD⁺ so glycolysis can keep making 2 ATP per glucose.','Purpose of fermentation'],
+   ['Fermentation itself makes how much extra ATP?',['None. It only regenerates NAD⁺','2 ATP','32 ATP','4 ATP'],0,'All anaerobic ATP comes from glycolysis.','ATP from fermentation'],
+   ['A baker\'s yeast faces the same problem. What does yeast make instead?',['Ethanol and CO₂ (the bubbles that make bread rise)','Lactic acid','Glucose and O₂','Acetyl-CoA'],0,'Alcohol fermentation removes CO₂ from pyruvate, then reduces acetaldehyde to ethanol.','Alcohol fermentation'],
+   ['After the sprints, the player keeps breathing hard. Why?',['Extra O₂ is needed to convert lactic acid back to pyruvate for aerobic respiration','To get rid of the lactic acid as CO₂ right away','Because the Krebs cycle needs light','To make more glucose by photosynthesis'],0,'Lactic acid is converted back to pyruvate, which continues through aerobic respiration once O₂ is available.','Recovering from lactic acid'],
+   ['How many times more ATP does aerobic respiration make per glucose than anaerobic?',['18 times','2 times','9 times','36 times'],0,'36 ATP vs 2 ATP.','Aerobic vs anaerobic yield']];
+  let i=0; const go=()=>{ if(i>=qs.length){ nextBtn('See results →'); return } const d=document.createElement('div'); d.style.marginTop=i?'18px':'0'; c.appendChild(d); const q=qs[i++]; ask(d,`${i}. ${q[0]}`,q[1],q[2],q[3],go,q[4]); }; go();
+},
+
+/* 12 finish */
+()=>{
+  const m=S.missed.length; const rank=m===0?'Master of Membranes':m<=2?'ATP Synthase Specialist':m<=4?'Proton Pumper':'Wandering Electron';
+  setScene(`<svg viewBox="0 0 1000 380" preserveAspectRatio="xMidYMid meet">${Array.from({length:22},(_,i)=>`<circle cx="${80+i*40}" cy="${300-((i*37)%140)}" r="${10+(i%3)*4}" fill="#ffc94a" opacity=".${3+(i%6)}"/>`).join('')}<text x="500" y="150" text-anchor="middle" font-size="56" fill="#ffc94a" font-family="Fredoka, Nunito, sans-serif">Journey complete!</text><text x="500" y="210" text-anchor="middle" font-size="30" fill="#fff" font-family="Fredoka, Nunito, sans-serif">${rank}</text></svg>`);
+  const msg={full:'You travelled from a photon in Photosystem II, through the Calvin cycle into glucose, then through glycolysis, the Krebs cycle and the electron transport chain to oxygen.',photo:'You travelled from a photon in Photosystem II, through the electron transport chain and PSI, and into glucose through the Calvin cycle.',resp:'You took glucose through glycolysis, pyruvate oxidation, the Krebs cycle and the electron transport chain, then survived an oxygen shortage.'}[S.mode];
+  const c=page('Finish',{full:'From sunlight to ATP',photo:'From sunlight to glucose',resp:'From glucose to ATP'}[S.mode],msg);
+  c.innerHTML=`<div class="big">${S.score} pts</div><p class="mission">Total ATP cashed in on the trip: <b>${S.atp}</b></p>`+
+   (S.missed.length?`<p style="font-weight:800;margin:8px 0 4px">Review these before the quiz:</p><ul>${S.missed.map(m=>`<li>${m}</li>`).join('')}</ul>`:'<p style="font-weight:800">You got every checkpoint on the first try. Quiz-ready!</p>')+
+   '<button class="btn go" id="again">Play again</button>';
+  $('#again').onclick=()=>{ S.score=0;S.atp=0;S.missed=[];S.stage=0;S.pos=0;S.order=ORDERS.full; hud(); run(); };
+}
+];
+
+function track(){ $('#track').innerHTML=S.order.map((_,i)=>`<i class="${i<S.pos?'done':i===S.pos?'on':''}"></i>`).join(''); }
+function run(){ gen++; scene.style.height=''; track(); scene.innerHTML=''; stages[S.stage](); window.scrollTo({top:0,behavior:'smooth'}); }
+function next(){ S.pos=Math.min(S.pos+1,S.order.length-1); S.stage=S.order[S.pos]; run(); }
+hud(); run();
+}
+</script>
+</body>
+</html>
