@@ -1,0 +1,1474 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Mitosis Lab: a Biology 30 game on mitosis, stem cells, cloning, cancer and teratogens.">
+<style>[hidden]{display:none!important}img{max-width:100%}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
+<title>Mitosis Lab</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Nunito:wght@500;700;800&display=swap">
+<style>
+/* Layout: one narrow "bench" column. Home = vertical path of lab stations. Each station = Learn cards -> Lab demo(s) -> Practice questions.
+   Microscope Bay = a stained-slide field with numbered pins. Accent = aceto-orcein magenta (the real stain used on root-tip slides). */
+:root{
+  --bg:#EDF2F1; --surface:#FFFFFF; --ink:#16282C; --muted:#53686D; --line:#CBD8D7; --line-dk:#B3C4C3;
+  --stain:#B0246B; --stain-soft:#F6DCE9;
+  --primary:#0F7B86; --primary-dk:#0A5B64; --on-primary:#FFFFFF;
+  --teal:#0F6F7A; --teal-soft:#D6ECEE;
+  --good:#1F8A5B; --good-soft:#D8F1E4; --on-good:#FFFFFF; --bad:#C23B3B; --bad-soft:#F9DCDC;
+  --field:#F1E9F0; --wall:#B79BB6; --rim:#2A3A3E; --nucfill:rgba(255,255,255,.6);
+  --floor:#E3EBEA; --floorline:#D0DCDA; --bench:#F7FAFA; --benchedge:#9FB3B2; --wall:#C9D6D5;
+  --display:'Bricolage Grotesque',system-ui,sans-serif; --body:'Nunito',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0E1A1D; --surface:#16272B; --ink:#E6F0EF; --muted:#9DB3B6; --line:#2A4146; --line-dk:#1F3236;
+  --stain:#EE6DAB; --stain-soft:#3A1A2B;
+  --primary:#3DB5C2; --primary-dk:#23808B; --on-primary:#06191C;
+  --teal:#5CC3CD; --teal-soft:#14343A;
+  --good:#4CC38A; --good-soft:#143428; --on-good:#06191C; --bad:#F07373; --bad-soft:#3B1B1B;
+  --field:#261B28; --wall:#6B536B; --rim:#050B0C; --nucfill:rgba(255,255,255,.07);  --floor:#12242A; --floorline:#1B3137; --bench:#223A40; --benchedge:#0B1719; --wall:#2C454B; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1A1D; --surface:#16272B; --ink:#E6F0EF; --muted:#9DB3B6; --line:#2A4146; --line-dk:#1F3236;
+  --stain:#EE6DAB; --stain-soft:#3A1A2B;
+  --primary:#3DB5C2; --primary-dk:#23808B; --on-primary:#06191C;
+  --teal:#5CC3CD; --teal-soft:#14343A;
+  --good:#4CC38A; --good-soft:#143428; --on-good:#06191C; --bad:#F07373; --bad-soft:#3B1B1B;
+  --field:#261B28; --wall:#6B536B; --rim:#050B0C; --nucfill:rgba(255,255,255,.07);  --floor:#12242A; --floorline:#1B3137; --bench:#223A40; --benchedge:#0B1719; --wall:#2C454B; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:500 16px/1.5 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:640px;margin:0 auto;padding-block:20px 48px}
+h1,h2,h3{font-family:var(--display);line-height:1.15;margin:0;text-wrap:balance}
+h1{font-size:2rem;font-weight:800}
+h2{font-size:1.35rem;font-weight:800}
+h3{font-size:1.1rem;font-weight:800}
+p{margin:0}
+button{font-family:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--stain);outline-offset:2px}
+.muted{color:var(--muted)}
+.tag{display:inline-block;font:800 12px var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--stain);background:var(--stain-soft);border-radius:999px;padding:3px 10px}
+
+.btn{display:block;width:100%;font:800 15px var(--body);letter-spacing:.05em;text-transform:uppercase;border:0;border-radius:14px;padding:14px 20px;
+  background:var(--primary);color:var(--on-primary);box-shadow:0 4px 0 var(--primary-dk);cursor:pointer}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--primary-dk)}
+.btn[disabled]{background:var(--line);color:var(--muted);box-shadow:0 4px 0 var(--line-dk);cursor:not-allowed}
+.btn.ghost{background:var(--surface);color:var(--teal);border:2px solid var(--line);box-shadow:0 4px 0 var(--line)}
+.btn.sm{display:inline-block;width:auto;padding:9px 14px;font-size:13px}
+.btn.on{border-color:var(--teal);background:var(--teal-soft)}
+.link{background:none;border:0;padding:0;color:var(--muted);text-decoration:underline;cursor:pointer;font:700 14px var(--body)}
+
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.brand{display:flex;flex-direction:column;gap:2px}
+.stats{display:flex;gap:8px;flex-wrap:wrap}
+.pill{font:800 14px var(--body);background:var(--surface);border:2px solid var(--line);border-radius:999px;padding:4px 12px;white-space:nowrap}
+.card{background:var(--surface);border:2px solid var(--line);border-radius:18px;padding:16px}
+.namebox{display:flex;flex-direction:column;gap:6px;margin-bottom:22px}
+.namebox label{font:800 13px var(--body);letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+input[type=text],textarea,select{width:100%;font:600 16px var(--body);color:var(--ink);background:var(--surface);border:2px solid var(--line);border-radius:12px;padding:10px 12px}
+select{font-size:15px;padding:9px}
+textarea{min-height:110px;resize:vertical}
+.path{display:flex;flex-direction:column;gap:6px;padding-block:4px}
+.step{display:flex;align-items:center;gap:14px;margin-left:min(var(--off,0px),10vw)}
+.step+.step{margin-top:12px}
+.node{flex:none;width:68px;height:68px;border-radius:50%;border:0;font:800 24px var(--display);cursor:pointer;
+  background:var(--primary);color:var(--on-primary);box-shadow:0 6px 0 var(--primary-dk)}
+.node:active{transform:translateY(4px);box-shadow:0 2px 0 var(--primary-dk)}
+.node.done{background:var(--good);color:var(--on-good);box-shadow:0 6px 0 rgba(0,0,0,.25)}
+.node.lock{background:var(--line);color:var(--muted);box-shadow:0 6px 0 var(--line-dk);cursor:not-allowed}
+.steptxt{display:flex;flex-direction:column;gap:2px;min-width:0}
+.steptxt b{font:800 17px var(--display)}
+.steptxt span{font-size:14px;color:var(--muted)}
+details{margin-top:24px}
+summary{cursor:pointer;font:800 14px var(--body);color:var(--teal)}
+.map{margin:12px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:15px}
+.gloss{margin:12px 0 0;display:grid;gap:8px}
+.gloss div{background:var(--surface);border:2px solid var(--line);border-radius:12px;padding:8px 12px;font-size:15px}
+.gloss b{color:var(--stain)}
+
+.bar{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+.x{flex:none;background:none;border:0;font:800 26px var(--body);color:var(--muted);cursor:pointer;line-height:1;padding:4px 8px}
+.prog{flex:1;height:14px;border-radius:99px;background:var(--line);overflow:hidden}
+.prog i{display:block;height:100%;background:var(--good);border-radius:99px;transition:width .3s}
+.dots{flex:1;display:flex;gap:6px}
+.dots i{flex:1;height:10px;border-radius:99px;background:var(--line)}
+.dots i.on{background:var(--stain)}
+.hearts{display:flex;gap:3px;align-items:center;color:var(--bad)}
+.hearts svg{width:22px;height:22px}
+.q{font-size:1.3rem;margin-bottom:16px}
+.fig{max-width:320px;margin:0 auto 12px}
+.figsvg{display:block;width:100%;height:auto}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{display:flex;gap:12px;align-items:center;width:100%;text-align:left;font:700 16px var(--body);color:var(--ink);background:var(--surface);
+  border:2px solid var(--line);border-bottom-width:4px;border-radius:14px;padding:12px 14px;cursor:pointer}
+.opt .k{flex:none;width:26px;height:26px;border:2px solid var(--line);border-radius:8px;display:grid;place-items:center;font:800 13px var(--body);color:var(--muted)}
+.opt.sel{border-color:var(--teal);background:var(--teal-soft)}
+.opt.right{border-color:var(--good);background:var(--good-soft)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.opt[disabled]{cursor:default}
+.line,.pool{display:flex;flex-wrap:wrap;gap:8px}
+.line{min-height:58px;padding:10px;border:2px dashed var(--line);border-radius:14px;margin-bottom:14px;align-content:flex-start}
+.chip{font:700 15px var(--body);background:var(--surface);border:2px solid var(--line);border-bottom-width:4px;border-radius:12px;padding:8px 12px;cursor:pointer;text-align:left}
+.chip.right{border-color:var(--good);background:var(--good-soft)}
+.chip.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.srow{display:flex;flex-direction:column;gap:8px;padding:12px;background:var(--surface);border:2px solid var(--line);border-radius:14px}
+.srow.right{border-color:var(--good);background:var(--good-soft)}
+.srow.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{flex:1;min-width:86px;font:800 13px var(--body);padding:8px;border-radius:10px;border:2px solid var(--line);background:var(--surface);cursor:pointer}
+.seg button.on{border-color:var(--teal);background:var(--teal-soft);color:var(--teal)}
+.stack{display:flex;flex-direction:column;gap:10px}
+.mcols{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mcols .col{display:flex;flex-direction:column;gap:10px;min-width:0}
+.mbtn{font:700 14px var(--body);text-align:left;background:var(--surface);border:2px solid var(--line);border-bottom-width:4px;border-radius:12px;padding:10px;cursor:pointer;min-height:64px}
+.mbtn.sel{border-color:var(--teal);background:var(--teal-soft)}
+.mbtn.ok{border-color:var(--good);background:var(--good-soft);opacity:.75;cursor:default}
+.mbtn.no{border-color:var(--bad);background:var(--bad-soft)}
+.foot{position:sticky;bottom:0;margin-top:22px;padding:12px 0 calc(12px + env(safe-area-inset-bottom,0px));background:var(--bg)}
+.sheet{border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.sheet.good{background:var(--good-soft)} .sheet.bad{background:var(--bad-soft)}
+.sheet strong{font:800 18px var(--display)}
+.sheet.good strong{color:var(--good)} .sheet.bad strong{color:var(--bad)}
+.sheet .why{font-size:15px}
+.ovl{border:2px solid var(--line);background:var(--surface);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+
+.center{text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center;padding-top:8px}
+.big{font:800 3rem var(--display);color:var(--stain)}
+.facts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.note{text-align:left;width:100%}
+.note dl{margin:10px 0 0;display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:15px}
+.note dt{font:800 12px var(--body);letter-spacing:.05em;text-transform:uppercase;color:var(--stain);padding-top:3px}
+.note dd{margin:0}
+.brief{display:flex;flex-direction:column;gap:14px}
+.plan{margin:8px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px;font-size:15px}
+.plan li{display:flex;gap:10px;align-items:center}
+.plan i{flex:none;width:10px;height:10px;border-radius:50%;background:var(--stain)}
+
+.term{display:flex;flex-direction:column;gap:2px;background:var(--stain-soft);border-radius:14px;padding:10px 14px}
+.term b{color:var(--stain);font:800 17px var(--display)}
+.term span{font-size:15px}
+.vis{background:var(--surface);border:2px solid var(--line);border-radius:14px;padding:10px}
+.vis svg{display:block;width:100%;height:auto}
+.mission{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.mission li{display:flex;gap:10px;align-items:center;font-weight:700;font-size:15px}
+.mission .ck{flex:none;width:22px;height:22px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-size:13px}
+.mission li.on .ck{background:var(--good);border-color:var(--good);color:var(--on-good)}
+.row2{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+.cnt{font:800 22px var(--display)}
+.sqs{display:flex;gap:4px;flex-wrap:wrap}
+.sqs i{width:22px;height:22px;border-radius:5px;background:var(--line)}
+.sqs i.on{background:var(--teal)}
+.rate{display:flex;gap:3px}
+.rate i{width:26px;height:10px;border-radius:3px;background:var(--line)}
+.rate i.on{background:var(--good)}
+.rate.bad i.on{background:var(--bad)}
+.trow{display:flex;flex-direction:column;gap:6px;padding:10px 12px;background:var(--surface);border:2px solid var(--line);border-radius:12px}
+.trow.pass{border-color:var(--good);background:var(--good-soft)}
+.trow.fail{border-color:var(--bad);background:var(--bad-soft)}
+.trow label{font:800 15px var(--body)}
+
+.scopebox{position:relative;border:6px solid var(--rim);border-radius:18px;overflow:hidden;background:var(--field)}
+.scopebox::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 58%,rgba(0,0,0,.35))}
+.field{display:block;width:100%;height:auto}
+.wall{fill:none;stroke:var(--wall);stroke-width:2}
+.blob{fill:var(--stain)}
+.pin{fill:var(--surface);stroke:var(--stain);stroke-width:2}
+.pin.ok{fill:var(--good);stroke:var(--good)}
+.pn{font:800 13px var(--body);fill:var(--ink);text-anchor:middle;pointer-events:none}
+.pn.ok{fill:var(--on-good)}
+.selc{fill:none;stroke:var(--teal);stroke-width:4}
+.hit{fill:transparent;cursor:pointer}
+.cell{fill:var(--teal-soft);stroke:var(--teal);stroke-width:2}
+.nuc{fill:var(--nucfill);stroke:var(--stain);stroke-width:2}
+.nucl{fill:var(--stain);opacity:.5}
+.chr{fill:none;stroke:var(--stain);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.chn{fill:none;stroke:var(--stain);stroke-width:1.5;opacity:.8}
+.sp{stroke:var(--muted);stroke-width:1;opacity:.7}
+.pole{fill:var(--muted)}
+.plate{stroke:var(--teal);stroke-width:2;stroke-dasharray:4 3}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.tools .grp{display:flex;gap:6px}
+.tools button{font:800 13px var(--body);padding:7px 12px;border-radius:10px;border:2px solid var(--line);background:var(--surface);cursor:pointer}
+.tools button.on{border-color:var(--teal);background:var(--teal-soft);color:var(--teal)}
+.phbtns{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.tally{width:100%;border-collapse:collapse;font-size:15px}
+.tally td,.tally th{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left}
+.tally td:last-child,.tally th:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.fb{padding:10px 12px;border-radius:12px;font-size:15px}
+.fb.good{background:var(--good-soft)} .fb.bad{background:var(--bad-soft)} .fb.info{background:var(--teal-soft)}
+
+.c-h{fill:var(--teal-soft);stroke:var(--teal);stroke-width:1.5}
+.c-f{fill:var(--teal-soft);stroke:var(--teal);stroke-width:2;stroke-dasharray:3 2}
+.c-t{fill:var(--stain-soft);stroke:var(--stain);stroke-width:1.5}
+.c-d{fill:var(--line);stroke:var(--muted);stroke-width:1.5}
+.dot-h{fill:var(--teal)} .dot-d{fill:var(--stain)} .dot-e{fill:var(--line)}
+.dish{fill:var(--field);stroke:var(--rim);stroke-width:4}
+
+.eyepiece{background:var(--field);border:6px solid var(--rim);border-radius:20px;padding:14px}
+.gh{font:800 12px var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--stain);margin:18px 0 -2px}
+.dpad{display:grid;grid-template-columns:repeat(3,58px);grid-template-rows:repeat(2,48px);gap:6px;justify-content:center;margin-top:12px}
+.dpad button{font:800 20px var(--body);border-radius:12px;border:2px solid var(--line);border-bottom-width:4px;background:var(--surface);cursor:pointer}
+.dpad button:active{transform:translateY(2px)}
+.mapbox{border:6px solid var(--rim);border-radius:18px;overflow:hidden;background:var(--surface)}
+.mapbox svg{display:block;width:100%;height:auto}
+.floor{fill:var(--surface);stroke:var(--line);stroke-width:.6;cursor:pointer}
+.tbl{fill:var(--line-dk);stroke:var(--rim);stroke-width:2}
+.mt{stroke-width:1.5}
+.mt.done{fill:var(--good-soft);stroke:var(--good)}
+.mt.open{fill:var(--stain-soft);stroke:var(--stain)}
+.mt.lock{fill:var(--line);stroke:var(--line-dk)}
+.ico{fill:none;stroke:var(--ink);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+.mnum{font:800 9px var(--body);fill:var(--ink);text-anchor:middle;pointer-events:none}
+.hud{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+.hud .cellfig{flex:none;width:92px;background:var(--surface);border:2px solid var(--line);border-radius:14px;padding:4px}
+.phases{display:flex;gap:4px;margin-top:6px}
+.phases i{flex:1;height:8px;border-radius:99px;background:var(--line)}
+.phases i.on{background:var(--stain)}
+.pt.yes{background:var(--good-soft);border-color:var(--good);color:var(--ink);box-shadow:0 4px 0 var(--good)}
+.pt.no{background:var(--bad-soft);border-color:var(--bad);color:var(--ink);box-shadow:0 4px 0 var(--bad)}
+.key{display:inline-block;width:14px;height:14px;border-radius:4px;vertical-align:-2px;margin:0 4px 0 8px}
+.eyecv{display:block;width:100%;height:auto;touch-action:none;cursor:grab;border-radius:12px;background:#0b0d0e}
+.focus{width:100%;accent-color:var(--primary)}
+.micro{display:block;width:100%;height:auto;border-radius:10px;border:2px solid var(--line)}
+.rfoot{margin-top:20px}
+.wrap.wide{max-width:1180px}
+.labgrid{display:grid;gap:16px;align-items:start}
+@media (min-width:900px){.labgrid{grid-template-columns:minmax(0,1fr) 300px}.side{position:sticky;top:12px}}
+.side{display:flex;flex-direction:column;gap:12px;min-width:0}
+.mapscroll{overflow-x:auto;border-radius:20px}
+.labmap{display:block;width:100%;min-width:660px;height:auto}
+.fhit{fill:transparent;cursor:pointer}
+.cub{cursor:pointer}
+.cub:hover .sign,.cub:focus-visible .sign{filter:brightness(1.08)}
+.cub:focus-visible{outline:none}
+.cub:focus-visible .cubfloor{stroke:var(--stain);stroke-width:4}
+.signtxt{font:800 15px var(--body);fill:#fff}
+.pulse{animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.2}}
+@media (prefers-reduced-motion:reduce){.pulse{animation:none}}
+.rep{display:flex;flex-direction:column;gap:6px}
+.rep label{font:800 15px var(--body)}
+#out{min-height:200px;font:600 13px/1.5 ui-monospace,Menlo,monospace}
+.shake{animation:shake .3s}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+@media (prefers-reduced-motion:reduce){.shake{animation:none}.prog i{transition:none}}
+</style>
+
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script defer src="https://cdn.jsdelivr.net/npm/pixi.js@7.4.2/dist/pixi.min.js"></script>
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+let S={name:'',xp:0,done:{},rep:{},open:false,scope:null,pos:{x:2,y:3}};
+try{const r=localStorage.getItem('cdl-v1');if(r)S=Object.assign(S,JSON.parse(r))}catch(e){}
+const save=()=>{try{localStorage.setItem('cdl-v1',JSON.stringify(S))}catch(e){}};
+
+/* ---------- cell drawings (shared by quiz figures and the microscope) ---------- */
+function parts(p,bare){
+  const X=(x,y,r)=>`<path class="chr" transform="translate(${x} ${y}) rotate(${r})" d="M-6,-9L6,9M6,-9L-6,9"/>`;
+  const V=(x,y,r)=>`<path class="chr" transform="translate(${x} ${y}) rotate(${r})" d="M-5,-8L0,2L5,-8"/>`;
+  const sq=(x,y)=>`<path class="chn" d="M${x-14},${y}q7,-9 14,0t14,0"/>`;
+  const oc=d=>bare?'':d;
+  if(p==='interphase')return oc(`<ellipse class="cell" cx="100" cy="70" rx="92" ry="58"/>`)+`<circle class="nuc" cx="100" cy="70" r="34"/><circle class="nucl" cx="110" cy="60" r="6"/>`+sq(100,54)+sq(100,70)+sq(100,86);
+  if(p==='prophase')return oc(`<ellipse class="cell" cx="100" cy="70" rx="92" ry="58"/>`)+`<circle class="nuc" cx="100" cy="70" r="36" stroke-dasharray="5 4"/>`+X(88,58,20)+X(112,56,-25)+X(90,84,50)+X(113,82,-10);
+  if(p==='metaphase'){const ys=[44,60,76,92];
+    return oc(`<ellipse class="cell" cx="100" cy="70" rx="92" ry="58"/>`)+`<circle class="pole" cx="20" cy="70" r="3"/><circle class="pole" cx="180" cy="70" r="3"/>`
+      +ys.map(y=>`<line class="sp" x1="20" y1="70" x2="100" y2="${y}"/><line class="sp" x1="180" y1="70" x2="100" y2="${y}"/>`).join('')+ys.map(y=>X(100,y,0)).join('')}
+  if(p==='anaphase'){const ys=[50,63,76,89];
+    return oc(`<ellipse class="cell" cx="100" cy="70" rx="94" ry="52"/>`)+`<circle class="pole" cx="20" cy="70" r="3"/><circle class="pole" cx="180" cy="70" r="3"/>`
+      +ys.map(y=>`<line class="sp" x1="20" y1="70" x2="52" y2="${y}"/><line class="sp" x1="180" y1="70" x2="148" y2="${y}"/>`).join('')
+      +ys.map(y=>V(52,y,90)+V(148,y,-90)).join('')}
+  if(p==='telophase')return oc(`<path class="cell" d="M100,34C72,8 12,28 12,70C12,112 72,132 100,106C128,132 188,112 188,70C188,28 128,8 100,34Z"/>`)
+      +`<circle class="nuc" cx="52" cy="70" r="22"/><circle class="nuc" cx="148" cy="70" r="22"/>`+sq(52,64)+sq(52,78)+sq(148,64)+sq(148,78)
+      +(bare?`<line class="plate" x1="100" y1="22" x2="100" y2="118"/>`:'');
+  return '';
+}
+const fig=p=>`<svg class="figsvg" viewBox="0 0 200 140" role="img" aria-label="Diagram of a dividing cell">${parts(p,false)}</svg>`;
+const PHN={interphase:'Interphase',prophase:'Prophase',metaphase:'Metaphase',anaphase:'Anaphase',telophase:'Telophase'};
+const PHK=Object.keys(PHN);
+const HINT={
+  interphase:'No separate chromosomes are visible. The nucleus is intact and the DNA is spread out as chromatin.',
+  prophase:'Chromosomes have condensed and are visible, but they are scattered and the nuclear membrane is breaking down.',
+  metaphase:'The chromosomes are lined up along the middle of the cell, attached to spindle fibres.',
+  anaphase:'Sister chromatids have separated and are being pulled toward opposite ends of the cell.',
+  telophase:'Two sets of chromosomes sit at opposite ends. New nuclear membranes form and a cell plate starts to divide the cytoplasm.'
+};
+
+/* ---------- learn-card visuals ---------- */
+const LV=['Totipotent','Pluripotent','Multipotent','Differentiated'];
+function ladder(hi){
+  return `<svg viewBox="0 0 320 176" role="img" aria-label="Potency ladder from totipotent to differentiated">`+LV.map((l,i)=>{
+    const w=300-i*50,x=(320-w)/2,y=i*44,on=hi===i;
+    return `<rect x="${x}" y="${y}" width="${w}" height="38" rx="10" fill="${on?'var(--stain)':'var(--teal-soft)'}" stroke="var(--teal)" stroke-width="2"/><text x="160" y="${y+24}" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="800" font-size="15" fill="${on?'#fff':'var(--ink)'}">${l}</text>`}).join('')+`</svg>`;
+}
+const NS=[['DNA helix width',2],['Nanoparticle',50],['Virus',100],['Bacterium',2000],['Red blood cell',7000],['Human hair',70000]];
+const VIS={
+  potency:()=>ladder(-1)+`<p class="muted" style="font-size:14px;text-align:center">More potential at the top, fewer options at the bottom</p>`,
+  nanoscale:()=>`<svg viewBox="0 0 320 ${NS.length*28+4}" role="img" aria-label="Sizes on a log scale, in nanometres">`+NS.map(([n,v],i)=>{
+    const w=Math.max(6,(Math.log10(v)+0.2)/5.1*118),y=i*28;
+    return `<text x="0" y="${y+18}" font-family="Nunito,sans-serif" font-weight="700" font-size="12" fill="var(--ink)">${n}</text><rect x="110" y="${y+5}" width="${w}" height="16" rx="4" fill="${n==='Nanoparticle'?'var(--stain)':'var(--teal)'}"/><text x="${110+w+6}" y="${y+18}" font-family="Nunito,sans-serif" font-weight="700" font-size="12" fill="var(--muted)">${v.toLocaleString('en-CA')} nm</text>`}).join('')+`</svg><p class="muted" style="font-size:13px;text-align:center">Log scale: each step to the right is about 10 times bigger</p>`,
+  plantculture:()=>`<svg viewBox="0 0 320 112" role="img" aria-label="A leaf piece grows into a callus and then a plantlet"><g font-family="Nunito,sans-serif" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="middle">
+    <ellipse cx="46" cy="42" rx="28" ry="14" fill="var(--good)" opacity=".6" transform="rotate(-20 46 42)"/><text x="46" y="92">Leaf piece</text>
+    <path d="M88,42h26" stroke="var(--muted)" stroke-width="2"/><path d="M116,42l-7,-5v10z" fill="var(--muted)"/>
+    <circle cx="160" cy="42" r="22" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="2"/><circle cx="152" cy="36" r="4" fill="var(--teal)"/><circle cx="168" cy="44" r="4" fill="var(--teal)"/><circle cx="157" cy="51" r="4" fill="var(--teal)"/><text x="160" y="92">Callus (dividing)</text>
+    <path d="M200,42h26" stroke="var(--muted)" stroke-width="2"/><path d="M228,42l-7,-5v10z" fill="var(--muted)"/>
+    <path d="M274,64V34" stroke="var(--good)" stroke-width="4" stroke-linecap="round"/><ellipse cx="262" cy="34" rx="12" ry="6" fill="var(--good)" opacity=".7" transform="rotate(-25 262 34)"/><ellipse cx="286" cy="28" rx="12" ry="6" fill="var(--good)" opacity=".7" transform="rotate(25 286 28)"/><path d="M274,64l-8,10m8,-10l8,10" stroke="var(--muted)" stroke-width="2"/><text x="274" y="92">New plantlet</text></g></svg>`
+};
+
+/* ---------- lab demos ---------- */
+const ABIL=['Grow a whole organism','Make heart cells','Make blood cells','Make nerve cells'];
+const POT=[
+ {n:'A fertilized egg (zygote)',c:[1,1,1,1],a:0,why:'Every test came back green, even a whole organism. That is totipotent (toti = whole).'},
+ {n:'A cell from an early embryo (embryonic stem cell)',c:[0,1,1,1],a:1,why:'It can make almost any body cell but not a whole organism. That is pluripotent (pluri = many).'},
+ {n:'An adult skin cell reprogrammed in the lab (iPSC)',c:[0,1,1,1],a:1,why:'Reprogramming makes it act like an embryonic stem cell. Also pluripotent.'},
+ {n:'A blood stem cell from bone marrow',c:[0,0,1,0],a:2,why:'It makes only blood cell types. That is multipotent (multi = several related types).'},
+ {n:'A neuron (nerve cell)',c:[0,0,0,0],a:3,why:'It cannot become anything else. It is differentiated: specialized for one job.'}
+];
+const DISH=Array.from({length:128},(_,i)=>{const r=8.4*Math.sqrt(i+.5),a=i*2.39996;return [110+r*Math.cos(a),110+r*Math.sin(a)]});
+const NANO=['fhhhhhhf','hhtttThh','httttTth','hhtttthh','fhhhhhhf'];
+const SC_STEPS=[
+ ['Collect a body cell from Sheep A','Sheep A is the DNA donor. Her body cell has a full set of chromosomes in its nucleus.'],
+ ['Collect an egg cell from Sheep B','Sheep B is the egg donor. Her egg has a large cytoplasm, and its nucleus holds only half the chromosomes.'],
+ ['Remove the egg’s nucleus','The egg is now enucleated. It keeps its cytoplasm, including the mitochondria, but has no nuclear DNA.'],
+ ['Insert Sheep A’s nucleus into the egg','The egg now holds a full set of chromosomes from Sheep A.'],
+ ['Give a small electric pulse','The pulse starts division. Mitosis copies Sheep A’s DNA into every new cell: 1, 2, 4, then 8 cells.'],
+ ['Implant the embryo in Sheep C','Sheep C is the surrogate. She carries the embryo but gives it no nuclear DNA.']
+];
+const SRC=[
+ {k:'house',n:'Old house',x:45,t:'Lead',how:'Lead comes from old paint and old plumbing. It reaches people through dust and drinking water.',type:'Chemical teratogen (a metal)'},
+ {k:'farm',n:'Farm field',x:125,t:'Pesticides',how:'Rain washes some pesticides off fields and into streams and groundwater.',type:'Chemical teratogens'},
+ {k:'plant',n:'Power plant',x:205,t:'Mercury',how:'Burning coal and mining release mercury. In water, microbes convert it to methylmercury, which builds up in fish (bioaccumulation) and then in people who eat them.',type:'Chemical teratogen (a metal)'},
+ {k:'fact',n:'Old factory',x:285,t:'PCBs',how:'PCBs were used in electrical equipment. They break down slowly, collect in sediment and build up in food chains.',type:'Chemical teratogens'}
+];
+const CONT=[['lead','Lead'],['pest','Pesticide'],['merc','Mercury (from smokestacks)'],['pcb','PCBs']];
+const TECH=[['boil','Boil the water'],['carbon','Activated carbon filter'],['ro','Reverse osmosis'],['microbe','Microbes (bioremediation)'],['plant','Plants (phytoremediation)'],['scrub','Smokestack scrubber']];
+const RATE={boil:[0,0,0,0],carbon:[1,3,1,3],ro:[3,2,3,2],microbe:[0,2,0,1],plant:[2,1,1,1],scrub:[0,0,3,0]};
+const RNOTE={
+ boil:'Boiling kills germs but does not remove metals or chemicals. It can even concentrate them.',
+ carbon:'Activated carbon traps organic chemicals on its surface. It is weak at removing dissolved metals.',
+ ro:'Reverse osmosis pushes water through a membrane that blocks dissolved metals and many chemicals.',
+ microbe:'Microbes can break down some organic chemicals, but they cannot destroy a metal. Some microbes even convert mercury into the more toxic methylmercury.',
+ plant:'Plants can take up metals into their tissues, but it is slow and the plants must be harvested and disposed of safely.',
+ scrub:'Scrubbers capture mercury from smokestack gases before it escapes. They do not clean water that is already polluted.'
+};
+const RLAB=['Removes none','Removes a little','Removes some','Removes most'];
+
+function sheep(x,y,face,sc){
+  sc=sc||1;
+  return `<g transform="translate(${x} ${y}) scale(${sc})"><path d="M-14,14v12M-4,14v12M8,14v12M18,14v12" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/><ellipse rx="27" ry="17" fill="#F4F4F0" stroke="var(--ink)" stroke-width="2"/><circle cx="-31" cy="-4" r="10" fill="${face}" stroke="var(--ink)" stroke-width="2"/></g>`;
+}
+function scntScene(m){
+  const st=m.step;
+  let s=`<svg viewBox="0 0 320 210" role="img" aria-label="Cloning bench with three sheep and a culture dish"><g font-family="Nunito,sans-serif" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="middle">`
+   +sheep(60,38,'#F4F4F0')+`<text x="60" y="78">A: DNA donor</text>`
+   +sheep(160,38,'#2B2B2B')+`<text x="160" y="78">B: egg donor</text>`
+   +sheep(260,38,'#2B2B2B')+`<text x="260" y="78">C: surrogate</text>`;
+  s+=`<rect x="20" y="92" width="280" height="100" rx="16" fill="var(--field)" stroke="var(--rim)" stroke-width="3"/>`;
+  const body=(x,y)=>`<circle cx="${x}" cy="${y}" r="16" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="2"/><circle cx="${x}" cy="${y}" r="6" fill="var(--stain)"/>`;
+  const egg=(x,y,n)=>`<circle cx="${x}" cy="${y}" r="34" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="2"/>`+(n==='none'?`<circle cx="${x}" cy="${y}" r="10" fill="none" stroke="var(--muted)" stroke-dasharray="3 3"/>`:`<circle cx="${x}" cy="${y}" r="10" fill="${n==='A'?'var(--stain)':'var(--teal)'}"/>`);
+  if(st===0)s+=`<text x="160" y="146" fill="var(--muted)">Empty dish: choose the first step</text>`;
+  if(st===1)s+=body(160,142)+`<text x="160" y="182">Body cell from A</text>`;
+  if(st===2)s+=body(100,142)+egg(200,142,'B')+`<text x="100" y="182">Body cell (A)</text><text x="200" y="182">Egg (B)</text>`;
+  if(st===3)s+=body(100,142)+egg(200,142,'none')+`<text x="100" y="182">Body cell (A)</text><text x="200" y="182">Egg, nucleus removed</text>`;
+  if(st===4)s+=egg(160,142,'A')+`<text x="160" y="184">Egg with A’s nucleus</text>`;
+  if(st===5){[[140,132],[160,128],[180,132],[130,150],[150,152],[170,152],[190,150],[160,140]].forEach(([x,y])=>{s+=`<circle cx="${x}" cy="${y}" r="10" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="2"/><circle cx="${x}" cy="${y}" r="4" fill="var(--stain)"/>`});s+=`<text x="160" y="184">8-cell embryo, all with A’s DNA</text>`}
+  if(st===6)s+=`<text x="160" y="146">Embryo is growing in Sheep C</text><circle cx="262" cy="42" r="5" fill="var(--stain)"/>`;
+  if(st>=7)s+=sheep(160,140,m.pred===0?'#F4F4F0':'#2B2B2B',.8)+`<text x="160" y="182">The lamb</text>`;
+  return s+`</g></svg>`;
+}
+const DEMOS={
+potency:{title:'Test the cells',intro:'Run all four growth tests on each sample, then use the guide to decide how much potential it has.',
+ init:()=>({i:0,t:[null,null,null,null],fb:null,ok:false,fin:false}),
+ view(m){
+  const guide=`<div class="stack" style="gap:6px">${LV.map(t=>`<div class="term"><b>${t}</b><span>${esc(TERMS[t])}</span></div>`).join('')}</div>`;
+  if(m.fin)return `<p><b>All sorted.</b> You worked out the potency ladder from your own test results.</p>${ladder(-1)}${guide}`;
+  const s=POT[m.i],all=m.t.every(x=>x!==null);
+  return guide+`<p class="muted">Sample ${m.i+1} of ${POT.length}</p><h3>${esc(s.n)}</h3>
+   <p class="muted" style="font-size:13px">Result colours:<span class="key" style="background:var(--good)"></span>it can<span class="key" style="background:var(--bad)"></span>it cannot</p>
+   <div class="row2">${ABIL.map((a,i)=>`<button class="btn ghost sm pt ${m.t[i]===null?'':m.t[i]?'yes':'no'}" data-a="pt" data-i="${i}" ${m.t[i]!==null?'disabled':''} aria-label="${a}${m.t[i]===null?'':m.t[i]?': yes, it can':': no, it cannot'}">${a}</button>`).join('')}</div>
+   ${all?`<p><b>What is it?</b></p>${ladder(m.ok?s.a:-1)}<div class="phbtns">${LV.map((l,i)=>`<button class="btn ghost sm" data-a="pc" data-i="${i}" ${m.ok?'disabled':''}>${l}</button>`).join('')}</div>`:`<p class="muted">Tap each test to run it (${m.t.filter(x=>x!==null).length} of 4 done).</p>`}
+   ${m.fb?`<div class="fb ${m.ok?'good':'bad'}">${esc(m.fb)}</div>`:''}${m.ok?`<button class="btn sm" data-a="dn">${m.i+1<POT.length?'Next sample':'Finish'}</button>`:''}`;
+ },
+ act(m,a,d){
+  const s=POT[m.i];
+  if(a==='pt'&&m.t[+d.i]===null)m.t[+d.i]=s.c[+d.i];
+  if(a==='pc'){if(+d.i===s.a){m.ok=true;m.fb=s.why}else{lose();m.fb='Not '+LV[+d.i].toLowerCase()+'. Compare the green and red results with the guide: more green means more potential.'}}
+  if(a==='dn'){m.i++;m.t=[null,null,null,null];m.fb=null;m.ok=false;if(m.i>=POT.length){m.i=POT.length-1;m.fin=true}}
+ },
+ mission:m=>[['Work out all 5 samples',m.fin]]},
+incubator:{title:'How many days?',intro:'Start with 4 skin cells from the patient. Every cell divides by mitosis once a day, so the number of cells doubles. Decide how many days to incubate.',
+ init:()=>({target:[64,128,256,512][Math.floor(Math.random()*4)],g:3,ran:false,ok:false,graft:false,tries:0,msg:null}),
+ view(m){
+  const cells=4*Math.pow(2,m.g),shown=m.ok?cells:4,n=Math.min(128,shown);
+  const dots=DISH.slice(0,n).map(p=>`<circle class="dot-h" cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3.4"/>`).join('');
+  const dish=`<svg viewBox="0 0 220 220" style="max-width:240px;margin:0 auto;display:block" role="img" aria-label="Culture dish"><circle class="dish" cx="110" cy="110" r="106"/>${dots}</svg>`;
+  if(m.ok){
+   const rows=Array.from({length:m.g+1},(_,i)=>`<tr><td>Day ${i}</td><td>${4*Math.pow(2,i)} cells</td></tr>`).join('');
+   return dish+(cells>128?'<p class="muted" style="font-size:13px;text-align:center">The dish picture shows up to 128 cells.</p>':'')+`<div class="fb good"><b>Just right: ${m.g} days.</b> 4 cells doubled ${m.g} times is ${cells}, the ${m.target} needed.</div><table class="tally"><tr><th>Day</th><th>Cells</th></tr>${rows}</table>`
+    +(m.graft?`<div class="fb good"><b>Graft ready.</b> Cells from the patient\u2019s own skin are a genetic match, so the immune system will not reject the graft. This is an autograft grown by mitosis.</div>`:`<button class="btn" data-a="dg">Make the graft</button>`);
+  }
+  return dish+`<div class="fb info">The wound needs <b>${m.target}</b> cells. You start with <b>4</b>. How many days will you incubate?</div>
+   ${m.msg?`<div class="fb bad">${esc(m.msg)}</div>`:''}
+   <div class="facts"><button class="btn ghost sm" data-a="ig" data-v="-1" ${m.g<=1?'disabled':''} aria-label="One fewer day">\u2212</button><span class="pill cnt" style="font-size:18px">${m.g} days</span><button class="btn ghost sm" data-a="ig" data-v="1" ${m.g>=9?'disabled':''} aria-label="One more day">+</button></div>
+   <button class="btn" data-a="ir">Start the incubator</button>`;
+ },
+ act(m,a,d){
+  if(a==='ig'){m.g=Math.max(1,Math.min(9,m.g+(+d.v)));m.msg=null}
+  if(a==='ir'){m.tries++;const c=4*Math.pow(2,m.g);
+   if(c===m.target)m.ok=true;
+   else{lose();m.msg=c<m.target?'Too few cells. The graft would have gaps. Try more days.':'Too many cells. Extra days waste time, crowd the dish, and add divisions that shorten telomeres and raise mutation risk. Try fewer days.'}}
+  if(a==='dg'&&m.ok)m.graft=true;
+ },
+ mission:m=>[['Choose the right number of days',m.ok],['Make the graft',m.graft]]},
+biopsy:{title:'Read the biopsy slides',intro:'Two stained biopsy slides are waiting. Put each one on the microscope stage, focus it, change objectives, and decide which one shows cancer.',
+ init:()=>{const m={r:0,fb:null,ans:null,fin:false};DEMOS.biopsy.gen(m);return m},
+ gen(m){m.tl=Math.random()<.5?'A':'B';m.seed=(Math.random()*1e9)|0;m.ans=null;m.fb=null;m.slide='A';m.obj=4;m.focus=8;m.px=512;m.py=512;
+  m.ft={A:35+Math.random()*45,B:35+Math.random()*45};
+  m.cv={A:histo(m.tl==='A'?'c':'n',m.r,m.seed),B:histo(m.tl==='B'?'c':'n',m.r,m.seed+77)}},
+ view(m){
+  if(m.fin)return `<div class="fb good"><b>All three biopsies read correctly.</b> Pathologists diagnose cancer from slides like these. They look for crowded, disorganized cells, nuclei that are large, dark and uneven in shape, and a high mitotic index (many cells caught in mitosis).</div>`;
+  return `<p class="muted">Biopsy ${m.r+1} of 3${m.r===2?' (this one is harder)':''}</p>
+   <div class="tools"><span class="muted" style="font-size:13px;font-weight:800">ON THE STAGE</span><div class="grp">${['A','B'].map(k=>`<button class="${m.slide===k?'on':''}" data-a="es" data-k="${k}">Slide ${k}</button>`).join('')}</div></div>
+   <div id="eyehost"></div>
+   <div class="tools" style="margin-top:10px"><span class="muted" style="font-size:13px;font-weight:800">OBJECTIVE</span><div class="grp">${[4,10,40].map(o=>`<button class="${m.obj===o?'on':''}" data-a="eo" data-v="${o}">${o}\u00d7</button>`).join('')}</div></div>
+   <label for="focus" style="font-weight:800;font-size:14px">Focus knob</label><input id="focus" class="focus" type="range" min="0" max="100" value="${Math.round(m.focus)}">
+   <p class="muted" style="font-size:13px">Turn the focus until the cells are sharp. Drag the view to move the slide. Start at 4\u00d7, then go up to 40\u00d7 to see the nuclei and any chromosomes in mitosis.</p>
+   <div class="row2"><button class="btn ghost" data-a="bp" data-k="A" ${m.ans?'disabled':''}>Slide A is cancerous</button><button class="btn ghost" data-a="bp" data-k="B" ${m.ans?'disabled':''}>Slide B is cancerous</button></div>
+   ${m.fb?`<div class="fb ${m.ans?'good':'bad'}">${m.fb}</div>`:''}
+   ${m.ans?`<button class="btn" data-a="bn">${m.r<2?'Next biopsy':'Finish'}</button>`:''}`;
+ },
+ act(m,a,d){
+  if(a==='es'&&m.slide!==d.k){m.slide=d.k;m.px=512;m.py=512;m.focus=Math.max(0,Math.min(100,m.ft[d.k]+(Math.random()<.5?-1:1)*(25+Math.random()*15)))}
+  if(a==='eo'){m.obj=+d.v;m.focus=Math.max(0,Math.min(100,m.focus+(Math.random()-.5)*14))}
+  if(a==='bp'&&!m.ans){
+   const T=m.cv[m.tl],N=m.cv[m.tl==='A'?'B':'A'],pc=x=>(100*x.mit/x.cells).toFixed(1);
+   if(d.k===m.tl){m.ans=d.k;m.fb=`<b>Correct: slide ${m.tl} is cancerous.</b> It has ${T.mit} of about ${T.cells} cells in mitosis (mitotic index ${pc(T)}%) compared with ${N.mit} of about ${N.cells} (${pc(N)}%). Its nuclei are larger, darker and uneven in shape, and its cells are crowded and disorganized.`}
+   else m.fb='Not that one. Look at both slides at 40\u00d7, in focus: which one has more cells caught in mitosis, and bigger, darker, uneven nuclei?'}
+  if(a==='bn'){m.r++;if(m.r>=3){m.r=2;m.fin=true}else DEMOS.biopsy.gen(m)}
+ },
+ mission:m=>[['Read 3 biopsy slides correctly',m.fin]]},
+runaway:{title:'Runaway division',intro:'One cell with a broken brake starts dividing out of control. Predict how long it takes to become a tumour, then answer two questions about what happened.',
+ init:()=>({g:20,ok:false,msg:null,a2:null,a3:null,w2:null,w3:null}),
+ view(m){
+  const guide=`<div class="stack" style="gap:6px">${['Tumour suppressor gene','Oncogene','Apoptosis','Metastasis'].map(t=>`<div class="term"><b>${t}</b><span>${esc(TERMS[t])}</span></div>`).join('')}</div>`;
+  let s=`<svg viewBox="0 0 220 40" role="img" aria-label="One damaged cell" style="max-width:260px;margin:0 auto;display:block"><circle class="dot-d" cx="110" cy="20" r="12"/></svg>
+   <div class="fb info">One skin cell has a broken brake. It divides once a day, and so do all of its daughter cells. A tumour about 1 cm wide has roughly <b>1,000,000,000</b> cells. How many divisions would it take?
+   <br><span class="muted">Clues: after 10 divisions there are about 1,000 cells. After 20 there are about 1,000,000.</span></div>`;
+  if(!m.ok){
+   return s+(m.msg?`<div class="fb bad">${esc(m.msg)}</div>`:'')+`<div class="facts"><button class="btn ghost sm" data-a="rg" data-v="-1" ${m.g<=5?'disabled':''} aria-label="One fewer division">−</button><span class="pill cnt" style="font-size:18px">${m.g} divisions</span><button class="btn ghost sm" data-a="rg" data-v="1" ${m.g>=40?'disabled':''} aria-label="One more division">+</button></div><button class="btn" data-a="rr">Run it</button>`;
+  }
+  let o=`<div class="fb good"><b>30 divisions.</b> 2 to the power of 30 is about 1.07 billion. The first divisions make so few cells that a tumour can grow unnoticed. (Real tumours divide more slowly than once a day.)</div>`;
+  o+=`<h3>Which gene normally applies the brakes and triggers apoptosis?</h3><div class="stack">${[['sup','Tumour suppressor gene'],['onc','Oncogene'],['tel','Telomerase']].map(([k,l])=>`<button class="opt ${m.a2===k?(k==='sup'?'right':'wrong'):''}" data-a="r2" data-k="${k}" ${m.a2==='sup'?'disabled':''}>${l}</button>`).join('')}</div>`;
+  if(m.a2==='sup'){
+   o+=`<div class="fb good">Correct. When a tumour suppressor gene is mutated, damaged cells can keep dividing instead of destroying themselves.</div><h3>Some tumour cells break away, travel in the blood and start new tumours elsewhere. What is this called?</h3><div class="stack">${[['meta','Metastasis'],['apo','Apoptosis'],['dif','Differentiation']].map(([k,l])=>`<button class="opt ${m.a3===k?(k==='meta'?'right':'wrong'):''}" data-a="r3" data-k="${k}" ${m.a3==='meta'?'disabled':''}>${l}</button>`).join('')}</div>`;
+   if(m.a3==='meta')o+=`<div class="fb good"><b>Metastasis</b> is why cancer that has spread is harder to treat.</div>`;
+  }
+  return s+o+guide;
+ },
+ act(m,a,d){
+  if(a==='rg'){m.g=Math.max(5,Math.min(40,m.g+(+d.v)));m.msg=null}
+  if(a==='rr'){if(m.g===30)m.ok=true;else{lose();m.msg=m.g<30?'Not enough cells for a tumour that size. Use the clues and try more divisions.':'That is far more than a billion cells. Try fewer divisions.'}}
+  if(a==='r2'){m.a2=d.k;if(d.k!=='sup')lose()}
+  if(a==='r3'){m.a3=d.k;if(d.k!=='meta')lose()}
+ },
+ mission:m=>[['Predict the number of divisions',m.ok],['Name the gene that failed',m.a2==='sup'],['Name the spread of cancer',m.a3==='meta']]},
+meta:{title:'Watch a tumour spread',intro:'This is a time-lapse of living tissue. Watch the primary tumour, then follow the cells that break away. Read each stage as it appears.',
+ init:()=>{metaStop();META.paused=false;return {seen:false,q1:null,q2:null}},
+ view(m){
+  const stg=META.stage||0;
+  let s=`<div class="scopebox" id="pixihost" style="min-height:120px"></div>
+   <div class="prog" style="margin-top:8px"><i id="metabar" style="width:${Math.min(100,100*(META.t||0)/31)}%"></i></div>
+   <div class="fb info" id="metacap" aria-live="polite">${esc(MCAP[stg])}</div>
+   <div class="row2"><button class="btn ghost sm" data-a="mp">${META.paused?'Play':'Pause'}</button><button class="btn ghost sm" data-a="mr">Replay from the start</button></div>`;
+  if(!m.seen)return s+`<p class="muted" style="font-size:14px">The questions appear when the secondary tumour has formed.</p>`;
+  const Q=(id,q,opts,ans,why)=>`<h3>${q}</h3><div class="stack">${opts.map(([k,l])=>`<button class="opt ${m[id]===k?(k===ans?'right':'wrong'):''}" data-a="${id}" data-k="${k}" ${m[id]===ans?'disabled':''}>${l}</button>`).join('')}</div>${m[id]===ans?`<div class="fb good">${why}</div>`:m[id]?`<div class="fb bad">Not quite. Replay the animation and watch where the cells go.</div>`:''}`;
+  s+=Q('q1','1. How did the tumour cells reach the lung?',[['blood','They entered a blood vessel and were carried in the blood'],['grow','The primary tumour grew until it touched the lung'],['air','They were breathed in through the air']],'blood','Correct. Cancer cells can travel in blood vessels or in lymph vessels to reach other organs.');
+  if(m.q1==='blood')s+=Q('q2','2. Why is cancer much harder to treat after it metastasizes?',[['many','There are now tumours in more than one place, so removing the first tumour is not enough'],['stop','Cells that travel stop dividing'],['lung','The secondary tumour is made of normal lung cells']],'many','Correct. The secondary tumour is made of the same cancer cells as the primary tumour, and there may be small tumours that are too tiny to see.');
+  return s;
+ },
+ act(m,a,d){
+  if(a==='mp')META.paused=!META.paused;
+  if(a==='mr'){metaStop();META.paused=false}
+  if(a==='q1'&&m.q1!=='blood'){m.q1=d.k;if(d.k!=='blood')lose()}
+  if(a==='q2'&&m.q2!=='many'){m.q2=d.k;if(d.k!=='many')lose()}
+ },
+ mission:m=>[['Watch the tumour spread',m.seen],['How the cells travelled',m.q1==='blood'],['Why spread is dangerous',m.q2==='many']]},
+clonelab:{title:'Clone a sheep',intro:'Three sheep, one lamb. Make the clone, predict what it will be like, then age it and see why clones can have shorter lives.',
+ init:()=>({ord:shuffle([0,1,2,3,4,5]),seq:[],ofb:null,f:{},ffb:null,pred:null,age:0,q:null}),
+ view(m){
+  const sheepCards=`<div class="row2" style="font-size:14px"><div class="term"><b>Sheep A</b><span>Body cell donor. White face, curly wool. 6 years old.</span></div><div class="term"><b>Sheep B</b><span>Egg cell donor. Black face, straight wool.</span></div><div class="term"><b>Sheep C</b><span>Surrogate mother. Black face, straight wool.</span></div></div>`;
+  const stepsDone=m.seq.length===6,featDone=CLF.every((_,i)=>m.f[i]===CLF[i][1]);
+  let o=scntScene({step:featDone?7:m.seq.length,pred:0})+sheepCards;
+  // part 1
+  if(!stepsDone){
+   o+=`<h3>Part 1: How is a clone made? Click the steps in order.</h3>
+    <ol class="plan" style="list-style:decimal;padding-left:20px">${m.seq.map(i=>`<li>${esc(SC_STEPS[i][0])}</li>`).join('')}</ol>
+    <div class="pool">${m.ord.filter(i=>!m.seq.includes(i)).map(i=>`<button class="chip" data-a="co" data-i="${i}">${esc(SC_STEPS[i][0])}</button>`).join('')}</div>
+    ${m.ofb?`<div class="fb ${m.ofb.ok?'good':'bad'}">${esc(m.ofb.t)}</div>`:''}`;
+   return o;
+  }
+  o+=`<div class="fb good"><b>Part 1 done.</b> This is somatic cell nuclear transfer (SCNT). After the electric pulse, the embryo grows by mitosis, so every cell carries Sheep A’s chromosomes.</div>`;
+  // part 2
+  o+=`<h3>Part 2: Which sheep does the lamb get each feature from?</h3><div class="stack">${CLF.map(([f,ans,why],i)=>{const ok=m.f[i]===ans;
+    return `<div class="srow ${ok?'right':''}"><b>${esc(f)}</b><div class="seg">${['A','B','C'].map(k=>`<button class="${m.f[i]===k?'on':''}" data-a="cf" data-i="${i}" data-k="${k}" ${ok?'disabled':''}>Sheep ${k}</button>`).join('')}</div>${ok?`<span style="font-size:14px">${esc(why)}</span>`:''}</div>`}).join('')}</div>
+   ${m.ffb?`<div class="fb bad">${esc(m.ffb)}</div>`:''}`;
+  if(!featDone)return o;
+  o+=`<div class="fb good"><b>The lamb is a clone of Sheep A:</b> white face, curly wool, the same chromosomes. Only its mitochondria came from B, and C just carried it.</div>`;
+  // part 3
+  o+=`<h3>Part 3: Age the sheep</h3><p>A normal lamb (made from an egg and a sperm) and the clone lamb are both born today. Each square is a piece of telomere. A cell stops dividing when its telomeres are down to 1 square.</p>`;
+  if(m.pred!=='clone'){
+   o+=`<p><b>Predict:</b> whose cells will reach their division limit first?</p><div class="stack">${[['clone','The clone lamb'],['normal','The normal lamb'],['same','Both at the same time']].map(([k,l])=>`<button class="opt ${m.pred===k?'wrong':''}" data-a="cp" data-k="${k}">${l}</button>`).join('')}</div>
+    ${m.pred?`<div class="fb bad">Look at Part 2 again: how old were the chromosomes the clone received?</div>`:''}`;
+   return o;
+  }
+  const nl=Math.max(1,12-m.age),cl=Math.max(1,6-m.age);
+  const bar=(l,lab,stop)=>`<div class="stack" style="gap:4px"><b>${lab}</b><div class="sqs">${Array.from({length:12},(_,i)=>`<i class="${i<l?'on':''}" style="${stop&&i<l?'background:var(--bad)':''}"></i>`).join('')}</div></div>`;
+  o+=`<div class="fb good">Good prediction. The clone’s chromosomes came from a 6-year-old sheep, so its telomeres were already shortened at birth.</div>
+   <div class="facts"><span class="pill cnt" style="font-size:18px">Age: ${m.age} years</span></div>
+   ${bar(nl,'Normal lamb',nl<=1)}${bar(cl,'Clone lamb',cl<=1)}
+   ${m.age>=5?`<div class="fb bad"><b>Year ${Math.min(m.age,5)}:</b> the clone’s telomeres are used up. Its cells stop dividing, so tissues repair poorly and it shows signs of old age early.</div>`:''}
+   ${m.age>=11?`<div class="fb info"><b>Year 11:</b> the normal sheep’s cells now reach their limit too. That is about a normal sheep lifespan (10 to 12 years).</div>`:''}
+   ${m.age<11?`<button class="btn" data-a="ca">Age both sheep 1 year</button>`:''}`;
+  if(m.age>=11){
+   o+=`<div class="fb info"><b>Real example:</b> Dolly the sheep was cloned in 1996 from a cell taken from a 6-year-old ewe. Her telomeres were shorter than normal for her age, and she died at about 6½ with lung disease and arthritis. Scientists still debate how much telomeres were to blame, and some later clones have aged normally.</div>
+    <h3>Why can a clone have a shorter life?</h3><div class="stack">${[['tel','Its cells started life with telomeres already shortened by the donor’s age'],['chr','Clones have fewer chromosomes than normal animals'],['mix','The surrogate mother’s DNA gets mixed into the clone']].map(([k,l])=>`<button class="opt ${m.q===k?(k==='tel'?'right':'wrong'):''}" data-a="cq" data-k="${k}" ${m.q==='tel'?'disabled':''}>${l}</button>`).join('')}</div>
+    ${m.q==='tel'?`<div class="fb good">Correct. A clone’s cells can only divide so many more times before its telomeres run out.</div>`:m.q?`<div class="fb bad">Not quite. Look at the telomere bars.</div>`:''}`;
+  }
+  return o;
+ },
+ act(m,a,d){
+  if(a==='co'){const i=+d.i;if(i===m.seq.length){m.seq.push(i);m.ofb={ok:true,t:SC_STEPS[i][1]}}else{lose();m.ofb={ok:false,t:'Not yet. Think about what has to happen first.'}}}
+  if(a==='cf'){const i=+d.i;m.f[i]=d.k;if(d.k!==CLF[i][1]){lose();m.ffb=CLF[i][3]}else m.ffb=null}
+  if(a==='cp'){m.pred=d.k;if(d.k!=='clone')lose()}
+  if(a==='ca'&&m.age<11)m.age++;
+  if(a==='cq'&&m.q!=='tel'){m.q=d.k;if(d.k!=='tel')lose()}
+ },
+ mission:m=>[['Put the cloning steps in order',m.seq.length===6],['Predict the clone’s features',CLF.every((_,i)=>m.f[i]===CLF[i][1])],['Age the sheep',m.age>=11],['Explain the shorter life',m.q==='tel']]},
+nano:{title:'Which treatment is more precise?',intro:'This tissue has a tumour (magenta) in the middle. Dashed cells are healthy cells that also divide quickly, like hair follicle or gut lining cells. Run each treatment and compare.',
+ init:()=>({run:null,res:{},q:null}),
+ view(m){
+  const dead=k=>{const r=m.run;if(!r)return false;if(r==='std')return k!=='h';return k==='t'};
+  let g='';
+  NANO.forEach((row,r)=>row.split('').forEach((k,c)=>{
+    const d=dead(k),x=4+c*27,y=4+r*27,cls=d?'c-d':k==='h'?'c-h':k==='f'?'c-f':'c-t';
+    g+=`<rect class="${cls}" x="${x}" y="${y}" width="23" height="23" rx="8"/>`;
+    if(k==='t'&&!d)g+=`<circle cx="${x+11.5}" cy="${y+4}" r="2.5" fill="var(--stain)"/>`;
+    if(d)g+=`<path d="M${x+7},${y+7}l9,9m0,-9l-9,9" stroke="var(--muted)" stroke-width="2" stroke-linecap="round"/>`;
+  }));
+  const both=m.res.std&&m.res.nano;
+  return `<svg viewBox="0 0 220 140" style="max-width:320px;margin:0 auto;display:block" role="img" aria-label="Tissue grid with a tumour"><g>${g}</g></svg>
+   <div class="row2"><button class="btn ghost sm" data-a="ns">Run standard chemotherapy</button><button class="btn ghost sm" data-a="nn">Run nanoparticle drug</button></div>
+   ${m.run==='std'?`<div class="fb info"><b>Standard chemotherapy</b> attacks every cell that is dividing quickly. All tumour cells die, but so do healthy fast-dividing cells (hair loss, nausea).</div>`:''}
+   ${m.run==='nano'?`<div class="fb info"><b>Nanoparticle drug.</b> Each nanoparticle carries the drug and a \u201ckey\u201d that fits the tumour cells, so only those cells take it up. Healthy cells are spared.</div>`:''}
+   ${both?`<table class="tally"><tr><th>Treatment</th><th>Tumour cells killed</th><th>Healthy cells harmed</th></tr><tr><td>Standard chemotherapy</td><td>14</td><td>4</td></tr><tr><td>Nanoparticle drug</td><td>12</td><td>0</td></tr></table>
+   <h3>Which treatment is more precise?</h3><div class="row2"><button class="btn ghost" data-a="nq" data-k="std" ${m.q==='nano'?'disabled':''}>Standard chemotherapy</button><button class="btn ghost" data-a="nq" data-k="nano" ${m.q==='nano'?'disabled':''}>Nanoparticle drug</button></div>
+   ${m.q==='std'?'<div class="fb bad">Not that one. Which treatment harmed fewer healthy cells?</div>':''}
+   ${m.q==='nano'?'<div class="fb good"><b>Correct.</b> Nanotechnology can target tumour cells and spare healthy ones. It is not perfect (two tumour cells could survive), and every new technology needs safety testing.</div>':''}`:''}`;
+ },
+ act(m,a,d){
+  if(a==='ns'){m.run='std';m.res.std=1}
+  if(a==='nn'){m.run='nano';m.res.nano=1}
+  if(a==='nq'){m.q=d.k;if(d.k!=='nano')lose()}
+ },
+ mission:m=>[['Run standard chemotherapy',!!m.res.std],['Run the nanoparticle drug',!!m.res.nano],['Pick the more precise treatment',m.q==='nano']]},
+scnt:{title:'Clone a sheep',intro:'You are the technician. Carry out each step in order, then predict what the lamb will look like.',
+ init:()=>({step:0,pred:null,fb:null}),
+ view(m){
+  let ui;
+  if(m.step<6)ui=`<div class="fb info">${m.step?esc(SC_STEPS[m.step-1][1]):'Sheep A has a white face. Sheep B and Sheep C have black faces.'}</div><button class="btn" data-a="ss">${esc(SC_STEPS[m.step][0])}</button>`;
+  else if(m.step===6)ui=`<div class="fb info">${esc(SC_STEPS[5][1])}</div><h3>Predict: whose face will the lamb have?</h3>
+    <div class="opts">${['Like Sheep A (white face)','Like Sheep B (black face)','Like Sheep C (black face)'].map((t,i)=>`<button class="opt" data-a="sp" data-i="${i}"><span class="k">${i+1}</span>${t}</button>`).join('')}</div>
+    ${m.fb?`<div class="fb bad">${esc(m.fb)}</div>`:''}`;
+  else ui=`<div class="fb good"><b>Correct: the lamb looks like Sheep A.</b> Its nuclear DNA came from Sheep A, so it is a clone of A. Sheep B only supplied the egg cytoplasm (including mitochondria) and Sheep C only carried the embryo.</div>
+    <table class="tally"><tr><th>Sheep</th><th>What the lamb received</th></tr><tr><td>A</td><td>Nuclear DNA (all the chromosomes)</td></tr><tr><td>B</td><td>Egg cytoplasm and mitochondria</td></tr><tr><td>C</td><td>A womb to grow in</td></tr></table>`;
+  return scntScene(m)+ui;
+ },
+ act(m,a,d){
+  if(a==='ss'&&m.step<6)m.step++;
+  if(a==='sp'){if(+d.i===0){m.pred=0;m.step=7;m.fb=null}else{lose();m.fb='Not quite. Think about whose nucleus is inside the embryo.'}}
+ },
+ mission:m=>[['Complete the six lab steps',m.step>=6],['Predict the lamb correctly',m.pred===0]]},
+telomere:{title:'The telomere clock',intro:'Each square is a piece of telomere. A normal cell can divide only until its telomere is down to 2 squares. For each cell, predict first, then test.',
+ init:()=>({pg:{young:null,old:null,cancer:null},tab:'young',t:{young:{len:10,divs:0},old:{len:5,divs:0},cancer:{len:10,divs:0}},hy:false,ho:false,big:false}),
+ view(m){
+  const tabs=[['young','Young body cell'],['old','Cell from an older donor'],['cancer','Cancer cell']];
+  const P={young:['A young body cell starts with 10 squares and stops dividing at 2. How many times can it divide?',[[4,'4'],[6,'6'],[8,'8'],[10,'10']]],
+   old:['A cell from an older donor starts with only 5 squares and also stops at 2. How many times can it divide?',[[2,'2'],[3,'3'],[5,'5'],[8,'8']]],
+   cancer:['A cancer cell starts with 10 squares, but it has telomerase switched on. How many times can it divide?',[[8,'8'],[10,'10'],[20,'20'],[99,'No limit']]]};
+  const T=`<div class="tools"><div class="grp" style="flex-wrap:wrap">${tabs.map(([k,l])=>`<button class="${m.tab===k?'on':''}" data-a="tt" data-k="${k}">${l}${(k==='young'&&m.hy)||(k==='old'&&m.ho)||(k==='cancer'&&m.big)?' \u2713':''}</button>`).join('')}</div></div>`;
+  if(m.pg[m.tab]===null)return T+`<h3>Predict</h3><p>${P[m.tab][0]}</p><div class="row2">${P[m.tab][1].map(([n,l])=>`<button class="btn ghost" data-a="tp" data-n="${n}">${l}${n===99?'':' divisions'}</button>`).join('')}</div>`;
+  const c=m.t[m.tab],stopped=m.tab!=='cancer'&&c.len<=2,pl=x=>x===99?'no limit':x+' divisions';
+  return T+`<p class="muted">${m.tab==='old'?'A cell from an older donor has already used up much of its telomere. This is what a clone made from an adult cell starts with.':m.tab==='cancer'?'This cancer cell has telomerase switched on, so its telomeres are rebuilt after each division.':'A normal body cell has no telomerase. Its telomeres shorten with every division.'}</p>
+   <p class="muted" style="font-size:14px">Your prediction: <b>${pl(m.pg[m.tab])}</b></p>
+   <div class="sqs" role="img" aria-label="Telomere length ${c.len} out of 10">${Array.from({length:10},(_,i)=>`<i class="${i<c.len?'on':''}"></i>`).join('')}</div>
+   <div class="facts"><span class="pill">Telomere length ${c.len}/10</span><span class="pill">${c.divs} divisions</span></div>
+   ${stopped?`<div class="fb ${m.pg[m.tab]===c.divs?'good':'bad'}"><b>Stopped after ${c.divs} divisions.</b> You predicted ${pl(m.pg[m.tab])}. The telomeres are too short, so this cell can no longer divide.</div>`:''}
+   ${m.tab==='cancer'&&c.divs>=12?`<div class="fb ${m.pg.cancer===99?'good':'bad'}"><b>Still dividing after ${c.divs} divisions.</b> You predicted ${pl(m.pg.cancer)}. With telomerase on, cancer cells can keep dividing with no limit.</div>`:''}
+   <div class="row2"><button class="btn" data-a="td" ${stopped?'disabled':''}>Divide</button><button class="btn ghost" data-a="tr">Reset this cell</button></div>`;
+ },
+ act(m,a,d){
+  if(a==='tp'){m.pg[m.tab]=+d.n;return}
+  if(a==='tt'){m.tab=d.k;return}
+  const c=m.t[m.tab];
+  if(a==='td'){
+    if(m.tab==='cancer'){c.divs++;if(c.divs>=12)m.big=true}
+    else if(c.len>2){c.len--;c.divs++;if(c.len<=2){if(m.tab==='young')m.hy=true;else m.ho=true}}
+  }
+  if(a==='tr'){c.len=m.tab==='old'?5:10;c.divs=0}
+ },
+ mission:m=>[['Predict and test the young cell',m.hy],['Predict and test the older donor\u2019s cell',m.ho],['Predict and test the cancer cell',m.big]]},
+contain:{title:'Teratogen lab',intro:'First trace where four teratogens come from. Then choose the technology that removes each one.',
+ init:()=>Object.assign(DEMOS.sources.init(),DEMOS.treat.init()),
+ view(m){const all=SRC.every(r=>m.seen[r.k]);
+  return `<h3>Part 1: Trace the sources</h3><p class="muted">Tap each source on the map.</p>`+DEMOS.sources.view(m)+(all?`<h3 style="margin-top:8px">Part 2: Clean it up</h3><p class="muted">Choose one technology for each contaminant, then test. You need one that removes most of each.</p>`+DEMOS.treat.view(m):`<p class="muted">Inspect all four sources to unlock Part 2.</p>`)},
+ act(m,a,d){DEMOS.sources.act(m,a,d);DEMOS.treat.act(m,a,d)},
+ mission:m=>[...DEMOS.sources.mission(m),...DEMOS.treat.mission(m)]},
+sources:{title:'Trace the sources',intro:'A river runs past four possible sources of teratogens. Tap each one to find out what it releases and how people are exposed.',
+ init:()=>({sel:null,seen:{}}),
+ view(m){
+  const ic={
+   house:x=>`<path d="M${x-18},40l18,-16l18,16z" fill="var(--stain-soft)" stroke="var(--stain)" stroke-width="2"/><rect x="${x-14}" y="40" width="28" height="22" fill="var(--surface)" stroke="var(--ink)" stroke-width="2"/>`,
+   farm:x=>`<rect x="${x-20}" y="26" width="40" height="36" fill="var(--good-soft)" stroke="var(--good)" stroke-width="2"/><path d="M${x-20},38h40M${x-20},50h40" stroke="var(--good)" stroke-width="2"/>`,
+   plant:x=>`<rect x="${x-20}" y="38" width="40" height="24" fill="var(--surface)" stroke="var(--ink)" stroke-width="2"/><rect x="${x+6}" y="22" width="9" height="16" fill="var(--surface)" stroke="var(--ink)" stroke-width="2"/><circle cx="${x+12}" cy="16" r="6" fill="var(--line)"/>`,
+   fact:x=>`<path d="M${x-20},62v-24l10,8v-8l10,8v-8l10,8v-8l10,8v24z" fill="var(--surface)" stroke="var(--ink)" stroke-width="2"/>`};
+  let s=`<svg viewBox="0 0 330 150" role="group" aria-label="River with four possible sources of teratogens"><g font-family="Nunito,sans-serif" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="middle">
+   <path d="M0,128q41,-14 82,0t82,0t82,0t84,0" fill="none" stroke="var(--teal)" stroke-width="9" stroke-linecap="round" opacity=".6"/>`;
+  SRC.forEach(r=>{s+=`<g>${ic[r.k](r.x)}${m.seen[r.k]?`<circle cx="${r.x+22}" cy="26" r="9" fill="var(--good)"/><text x="${r.x+22}" y="30" fill="var(--on-good)">✓</text>`:''}<text x="${r.x}" y="88">${r.n}</text><rect x="${r.x-38}" y="14" width="76" height="82" fill="transparent" ${m.sel===r.k?'stroke="var(--teal)" stroke-width="3" rx="8"':''} data-a="sr" data-k="${r.k}" tabindex="0" role="button" aria-label="${r.n}" style="cursor:pointer"/></g>`});
+  s+='</g></svg>';
+  const r=SRC.find(x=>x.k===m.sel);
+  return s+(r?`<div class="fb info"><b>${esc(r.n)}: ${esc(r.t)}</b><br>${esc(r.how)}<br><span class="muted">${esc(r.type)}</span></div>`:`<p class="muted">Tap a source on the map.</p>`);
+ },
+ act(m,a,d){if(a==='sr'){m.sel=d.k;m.seen[d.k]=true}},
+ mission:m=>[['Inspect all four sources',SRC.every(r=>m.seen[r.k])]]},
+treat:{title:'Treatment lab',intro:'Choose one technology for each contaminant, then test. You need a technology that removes most of each one.',
+ init:()=>({as:{},res:null}),
+ view(m){
+  const rows=CONT.map(([k,n],ci)=>{
+    const r=m.res&&m.res[k];
+    return `<div class="trow ${r?(r.v===3?'pass':'fail'):''}"><label for="s-${k}">${n}</label>
+     <select id="s-${k}" data-a="tsel" data-c="${k}"><option value="">Choose a technology</option>${TECH.map(([t,l])=>`<option value="${t}" ${m.as[k]===t?'selected':''}>${l}</option>`).join('')}</select>
+     ${r?`<div class="rate ${r.v<3?'bad':''}" role="img" aria-label="${RLAB[r.v]}">${[0,1,2].map(i=>`<i class="${i<r.v?'on':''}"></i>`).join('')}</div><span style="font-size:14px"><b>${RLAB[r.v]}.</b> ${esc(RNOTE[m.as[k]])}</span>`:''}</div>`}).join('');
+  const all=CONT.every(([k])=>m.as[k]);
+  return `<div class="stack">${rows}</div><button class="btn" data-a="tt2" ${all?'':'disabled'}>Test treatments</button>`;
+ },
+ act(m,a,d){
+  if(a==='tt2'){m.res={};CONT.forEach(([k],ci)=>{m.res[k]={v:RATE[m.as[k]][ci]}});if(CONT.some(([k])=>m.res[k].v<3))lose()}
+ },
+ mission:m=>[['Find a technology that removes most of every contaminant',!!m.res&&CONT.every(([k])=>m.res[k].v===3)]]}
+};
+
+/* ---------- metastasis time-lapse (pixi.js) ---------- */
+const CLF=[
+ ['Face colour','A','Face colour is coded in the nuclear DNA, which came from Sheep A.','Face colour is coded in DNA. Whose nucleus is in the embryo?'],
+ ['Wool type','A','Wool type is also coded in Sheep A’s nuclear DNA.','Wool type is coded in DNA. Whose nucleus is in the embryo?'],
+ ['Chromosomes in the nucleus','A','The nucleus, with all its chromosomes, came from Sheep A.','Which sheep gave the nucleus?'],
+ ['Mitochondria','B','Mitochondria are in the cytoplasm. The egg, and its cytoplasm, came from Sheep B.','Mitochondria are in the cytoplasm, not the nucleus. Whose egg was used?'],
+ ['The womb it grew in','C','Sheep C carried the embryo, but gave it no DNA.','Which sheep carried the embryo?'],
+ ['Telomere length at birth','A','Its chromosomes came from a 6-year-old sheep, so its telomeres start short, like Sheep A’s.','Telomeres are on the chromosomes. Whose chromosomes does the lamb have?']
+];
+const MCAP=[
+ 'Primary tumour: a damaged cell divides out of control and the tumour grows.',
+ 'Invasion: some tumour cells break loose and squeeze through healthy tissue toward a blood vessel.',
+ 'Intravasation: the tumour cells push through the vessel wall into the bloodstream.',
+ 'Circulation: the cells ride along with the red blood cells. Most of them die on the way.',
+ 'Extravasation: one cell sticks to the vessel wall in the lung and squeezes out.',
+ 'Secondary tumour: the cell divides by mitosis and a new tumour grows in the lung.',
+ 'A secondary tumour has formed far from the first one. This spread is metastasis.'
+];
+const MSTG=[0,6,11,14,20,23,31];
+const META={app:null,t:0,stage:0,paused:false,fail:false};
+function tok(n,fb){try{const v=getComputedStyle(document.documentElement).getPropertyValue(n).trim();if(/^#[0-9a-f]{6}$/i.test(v))return parseInt(v.slice(1),16)}catch(e){}return fb}
+function metaStop(){if(META.app){try{META.app.destroy(true,{children:true})}catch(e){}}META.app=null;META.t=0;META.stage=0}
+function metaStart(host){
+  metaStop();
+  if(typeof PIXI==='undefined'){META.fail=true;return}
+  let app;
+  try{app=new PIXI.Application({width:640,height:400,antialias:true,backgroundColor:tok('--field',0xF1E9F0),resolution:Math.min(2,window.devicePixelRatio||1),autoDensity:true})}
+  catch(e){META.fail=true;return}
+  META.app=app;META.fail=false;
+  const v=app.view;v.style.width='100%';v.style.height='auto';v.style.display='block';
+  const C={stain:tok('--stain',0xB0246B),teal:tok('--teal',0x0F6F7A),soft:tok('--teal-soft',0xD6ECEE),ink:tok('--ink',0x16282C),bad:tok('--bad',0xC23B3B),surf:tok('--surface',0xFFFFFF),line:tok('--line',0xCBD8D7)};
+  const R=Math.random,lerp=(a,b,k)=>a+(b-a)*Math.max(0,Math.min(1,k)),ease=k=>{k=Math.max(0,Math.min(1,k));return k*k*(3-2*k)};
+  const stage=app.stage;
+  // healthy tissue (left) and lung (right)
+  const normal=[];
+  for(let y=18;y<225;y+=30)for(let x=16+(y/30%2)*15;x<410;x+=32){
+    const g=new PIXI.Graphics();g.lineStyle(1.5,C.teal,.5).beginFill(C.soft,.9).drawCircle(0,0,13+R()*2).endFill();
+    g.beginFill(C.stain,.3).drawCircle(R()*3-1.5,R()*3-1.5,4).endFill();g.x=x+R()*4;g.y=y+R()*4;g.ph=R()*6;stage.addChild(g);normal.push(g)}
+  const lung=[];
+  for(let y=24;y<225;y+=40)for(let x=448+(y/40%2)*20;x<640;x+=42){
+    const g=new PIXI.Graphics();g.lineStyle(3,C.teal,.55).drawCircle(0,0,15+R()*4);g.beginFill(C.stain,.35).drawCircle(14,6,3.5).endFill();g.x=x+R()*6;g.y=y+R()*6;stage.addChild(g);lung.push(g)}
+  const div=new PIXI.Graphics();div.lineStyle(2,C.line,1);for(let y=0;y<235;y+=12)div.moveTo(425,y).lineTo(425,y+6);stage.addChild(div);
+  // blood vessel
+  const ves=new PIXI.Graphics();ves.beginFill(C.bad,.12).drawRect(0,246,640,56).endFill();ves.lineStyle(4,C.bad,.6).moveTo(0,246).lineTo(640,246).moveTo(0,302).lineTo(640,302);stage.addChild(ves);
+  const rbc=[];for(let i=0;i<34;i++){const g=new PIXI.Graphics();g.beginFill(C.bad,.85).drawEllipse(0,0,8,4.5).endFill();g.beginFill(0x000000,.15).drawEllipse(0,0,3.5,1.6).endFill();g.x=R()*660;g.y0=256+R()*36;g.y=g.y0;g.sp=60+R()*30;g.ph=R()*6;stage.addChild(g);rbc.push(g)}
+  // tumour cells
+  const mkT=()=>{const g=new PIXI.Graphics(),pts=[];for(let k=0;k<9;k++){const a=k/9*Math.PI*2,r=10*(0.8+R()*0.45);pts.push(Math.cos(a)*r,Math.sin(a)*r)}
+    g.lineStyle(1.5,C.stain,.9).beginFill(C.stain,.42).drawPolygon(pts).endFill();g.beginFill(C.stain,.95).drawEllipse(0,0,4.5+R()*2,4+R()*2).endFill();g.scale.set(0);g.ph=R()*6;stage.addChild(g);return g};
+  const P1={x:150,y:118},P2={x:528,y:148};
+  const spiral=(c,k,sx)=>({x:c.x+10.5*Math.sqrt(k)*Math.cos(k*2.39996)*sx,y:c.y+10.5*Math.sqrt(k)*Math.sin(k*2.39996)*0.85});
+  const prim=[],sec=[];
+  for(let k=0;k<28;k++){const g=mkT(),p=spiral(P1,k,1);g.hx=p.x;g.hy=p.y;g.x=p.x;g.y=p.y;g.born=k*0.2;prim.push(g)}
+  const trav=[25,27,23].map(i=>prim[i]);
+  trav.forEach((g,i)=>{g.ex=170+i*34;g.trav=true});
+  for(let k=0;k<20;k++){const g=mkT(),p=spiral(P2,k,1);g.x=p.x;g.y=p.y;g.born=23.6+k*0.38;sec.push(g)}
+  // labels
+  const st={fontFamily:'Nunito, system-ui, sans-serif',fontSize:15,fontWeight:'800',fill:C.ink,stroke:C.surf,strokeThickness:4};
+  const lab=(t,x,y)=>{const o=new PIXI.Text(t,st);o.x=x;o.y=y;stage.addChild(o);return o};
+  lab('Primary tumour',96,190);lab('Blood vessel',10,308);lab('Lung tissue',540,6);
+  const sl=lab('Secondary tumour',470,200);sl.alpha=0;
+  const flow=lab('Blood flow →',520,308);
+  let last=-1;
+  app.ticker.add(()=>{
+    const dt=app.ticker.deltaMS/1000;
+    if(!META.paused)META.t=Math.min(META.t+dt,MSTG[6]+0.01);
+    const t=META.t,clock=performance.now()/1000;
+    rbc.forEach(g=>{if(!META.paused){g.x+=g.sp*dt;if(g.x>660)g.x=-20}g.y=g.y0+Math.sin(clock*2+g.ph)*2;g.rotation=Math.sin(clock+g.ph)*0.2});
+    const radius=10.5*Math.sqrt(prim.filter(g=>t>=g.born).length)+10;
+    normal.forEach(g=>{const d=Math.hypot(g.x-P1.x,g.y-P1.y);g.alpha=d<radius+6?0.08:1;g.scale.set(1+Math.sin(clock*1.3+g.ph)*0.02)});
+    prim.forEach(g=>{
+      const grow=Math.max(0,Math.min(1,(t-g.born)/0.5));
+      if(!g.trav||t<6){g.scale.set(grow*(1+Math.sin(clock*3+g.ph)*0.05));g.x=g.hx;g.y=g.hy;return}
+      const i=trav.indexOf(g),wob=1+Math.sin(clock*6+g.ph)*0.12;g.scale.set(wob,2-wob);
+      if(t<11){const k=ease((t-6)/5);g.x=lerp(g.hx,g.ex,k);g.y=lerp(g.hy,238,k)}
+      else if(t<14){const k=ease((t-11)/3);g.x=g.ex;g.y=lerp(238,262+i*12,k)}
+      else if(i===1){const k=(t-14)/3;g.x=lerp(g.ex,g.ex+140,k);g.y=262+12;if(t>16){const f=Math.max(0,1-(t-16)/1.5);g.alpha=f;g.scale.set(f)}}
+      else if(t<20){const k=(t-14)/6;g.x=lerp(g.ex,i===0?P2.x:720,i===0?ease(k):k);g.y=262+i*12+Math.sin(clock*4)*2}
+      else if(i===0){if(t<23){const k=ease((t-20)/3);g.x=P2.x;g.y=lerp(262,P2.y,k)}else{g.x=P2.x;g.y=P2.y;g.alpha=t>23.6?0:1}}
+      else g.alpha=0;
+    });
+    sec.forEach(g=>{const grow=Math.max(0,Math.min(1,(t-g.born)/0.5));g.scale.set(grow*(1+Math.sin(clock*3+g.ph)*0.05))});
+    const sr=10.5*Math.sqrt(sec.filter(g=>t>=g.born).length)+8;
+    lung.forEach(g=>{g.alpha=Math.hypot(g.x-P2.x,g.y-P2.y)<sr?0.1:1});
+    sl.alpha=t>25?Math.min(1,(t-25)):0;
+    let sg=0;for(let k=0;k<MSTG.length;k++)if(t>=MSTG[k])sg=k;
+    if(t>=MSTG[6])sg=6;
+    const bar=document.getElementById('metabar');if(bar)bar.style.width=Math.min(100,100*t/MSTG[6])+'%';
+    if(sg!==last){last=sg;META.stage=sg;const cap=document.getElementById('metacap');if(cap)cap.textContent=MCAP[sg];
+      if(sg===6&&view==='demo'&&F&&F.d===DEMOS.meta&&DM&&!DM.seen){DM.seen=true;draw()}}
+  });
+  host.appendChild(v);
+}
+function metaFallback(host){
+  host.innerHTML=`<div style="padding:16px;background:var(--surface)"><p><b>The animation could not load on this device.</b> Here is what it shows:</p><ol class="map">${MCAP.slice(0,6).map(c=>`<li>${esc(c)}</li>`).join('')}</ol></div>`;
+  if(DM&&!DM.seen){DM.seen=true;setTimeout(draw,0)}
+}
+function afterDraw(){
+  const eh=document.getElementById&&document.getElementById('eyehost');
+  if(eh&&DM&&DM.cv)epMount(eh,DM);
+  const host=document.getElementById&&document.getElementById('pixihost');
+  if(host){
+    if(META.app)host.appendChild(META.app.view);
+    else{metaStart(host);if(META.fail)metaFallback(host)}
+  }else if(META.app)metaStop();
+}
+
+/* ---------- micrograph imaging (canvas) ---------- */
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const canDraw=()=>typeof document!=='undefined'&&!!document.createElement;
+function photoize(cv,R,soft,vig){
+  const w=cv.width,h=cv.height,c=cv.getContext('2d');
+  const t=document.createElement('canvas');t.width=Math.round(w*soft);t.height=Math.round(h*soft);
+  const tc=t.getContext('2d');tc.imageSmoothingEnabled=true;tc.drawImage(cv,0,0,t.width,t.height);
+  c.imageSmoothingEnabled=true;c.drawImage(t,0,0,w,h);
+  for(let i=0;i<4;i++){const x=R()*w,y=R()*h,g=c.createRadialGradient(x,y,0,x,y,w*(.25+R()*.3));g.addColorStop(0,`rgba(${R()<.5?120:255},${R()<.5?60:200},${R()<.5?110:220},.07)`);g.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=g;c.fillRect(0,0,w,h)}
+  if(vig){const g=c.createRadialGradient(w/2,h/2,Math.min(w,h)*.2,w/2,h/2,Math.max(w,h)*.72);g.addColorStop(0,'rgba(255,250,235,0)');g.addColorStop(1,'rgba(70,50,30,.28)');c.fillStyle=g;c.fillRect(0,0,w,h)}
+  const id=c.getImageData(0,0,w,h),d=id.data;for(let i=0;i<d.length;i+=4){const n=(R()-.5)*16;d[i]+=n;d[i+1]+=n;d[i+2]+=n}c.putImageData(id,0,0);
+}
+function histo(kind,lvl,seed){
+  const N=1024,R=rng(seed),ca=kind==='c';
+  const sp=ca?[25,27,29][lvl]:[34,33,32][lvl],jit=ca?[.4,.32,.24][lvl]:.14;
+  const cells=[];
+  for(let row=0,y=sp/2;y<N;row++,y+=sp*.87)for(let x=(row%2?sp/2:0)+sp/3;x<N;x+=sp)cells.push({x:x+(R()-.5)*sp*jit*2,y:y+(R()-.5)*sp*jit*2});
+  const nm=ca?[24,15,10][lvl]:[1,2,2][lvl],mit=new Set();
+  while(mit.size<nm)mit.add(Math.floor(R()*cells.length));
+  const out={cv:null,mit:nm,cells:cells.length};
+  if(!canDraw())return out;
+  const cv=document.createElement('canvas');cv.width=cv.height=N;const c=cv.getContext&&cv.getContext('2d');if(!c)return out;out.cv=cv;
+  c.fillStyle='#f3d3df';c.fillRect(0,0,N,N);
+  c.lineWidth=2;
+  for(let i=0;i<70;i++){c.strokeStyle=`rgba(226,${130+R()*30|0},170,.35)`;c.beginPath();let x=R()*N,y=R()*N;c.moveTo(x,y);for(let k=0;k<7;k++){x+=R()*70-35;y+=R()*70-35;c.lineTo(x,y)}c.stroke()}
+  cells.forEach(p=>{const r=sp*(ca?.52+R()*.3:.6+R()*.06);c.beginPath();
+    for(let k=0;k<=10;k++){const a=k/10*Math.PI*2,rr=r*(1+(R()-.5)*(ca?.25:.1));k?c.lineTo(p.x+Math.cos(a)*rr,p.y+Math.sin(a)*rr):c.moveTo(p.x+Math.cos(a)*rr,p.y+Math.sin(a)*rr)}
+    c.closePath();c.fillStyle=`rgba(${222+R()*22|0},${118+R()*34|0},${165+R()*25|0},.45)`;c.fill();c.strokeStyle='rgba(170,62,120,.5)';c.lineWidth=1.4;c.stroke()});
+  const rod=(x,y,a,l,w)=>{c.save();c.translate(x,y);c.rotate(a);c.beginPath();c.moveTo(-l/2,0);c.lineTo(l/2,0);c.lineWidth=w;c.lineCap='round';c.strokeStyle='rgba(36,12,66,.95)';c.stroke();c.restore()};
+  cells.forEach((p,i)=>{
+    c.save();c.translate(p.x,p.y);c.rotate(R()*Math.PI);
+    if(mit.has(i)){
+      c.beginPath();c.arc(0,0,sp*.46,0,7);c.fillStyle='rgba(252,232,240,.7)';c.fill();
+      const t=R();
+      if(t<.4){for(let k=0;k<11;k++)rod((R()-.5)*sp*.1,(k-5)*sp*.045,(R()-.5)*.8,sp*.17,3.2)}
+      else if(t<.65){for(let k=0;k<8;k++){rod(-sp*.18+(R()-.5)*3,(k-3.5)*sp*.05,.3*(k-3.5)/4,sp*.12,3);rod(sp*.18+(R()-.5)*3,(k-3.5)*sp*.05,-.3*(k-3.5)/4,sp*.12,3)}}
+      else if(t<.85){for(let k=0;k<12;k++){const a=R()*7,d=R()*sp*.17;rod(Math.cos(a)*d,Math.sin(a)*d,R()*7,sp*.16,2.6)}}
+      else{[-1,1].forEach(sg=>{c.beginPath();c.ellipse(sg*sp*.24,0,sp*.11,sp*.16,0,0,7);c.fillStyle='rgba(40,14,72,.92)';c.fill()});c.beginPath();c.moveTo(0,-sp*.4);c.lineTo(0,sp*.4);c.strokeStyle='rgba(170,62,120,.6)';c.lineWidth=2;c.stroke()}
+    }else{
+      const sc=ca?1.3+R()*[.75,.55,.38][lvl]:.95+R()*.12,rx=sp*.2*sc,ry=rx*(ca?.62+R()*.45:.8+R()*.12),wob=ca?.28:.06;
+      c.beginPath();for(let k=0;k<=12;k++){const a=k/12*Math.PI*2,f=1+(R()-.5)*wob,x=Math.cos(a)*rx*f,y=Math.sin(a)*ry*f;k?c.lineTo(x,y):c.moveTo(x,y)}c.closePath();
+      c.fillStyle=ca?`rgba(${52+R()*14|0},26,${100+R()*20|0},.93)`:`rgba(${92+R()*16|0},60,${146+R()*14|0},.8)`;c.fill();
+      for(let k=0;k<(ca?12:7);k++){c.beginPath();c.arc((R()-.5)*rx*1.3,(R()-.5)*ry*1.3,1+R()*1.3,0,7);c.fillStyle='rgba(28,8,52,.45)';c.fill()}
+      if(ca||R()<.35){c.beginPath();c.arc((R()-.5)*rx*.6,(R()-.5)*ry*.6,ca?2.4+R()*1.2:1.4,0,7);c.fillStyle='rgba(150,40,95,.9)';c.fill()}
+    }
+    c.restore();
+  });
+  for(let i=0;i<(ca?16:9);i++){const x=R()*N,y=R()*N;c.beginPath();c.arc(x,y,5.5,0,7);c.fillStyle='rgba(212,36,64,.78)';c.fill();c.beginPath();c.arc(x,y,2.2,0,7);c.fillStyle='rgba(242,128,146,.65)';c.fill()}
+  photoize(cv,R,.72,false);
+  return out;
+}
+/* onion root tip photomicrographs for the exam */
+const ONI={};
+function onionPhase(c,cl,ph,R){
+  const cx=cl.x+cl.w/2+(R()-.5)*5,cy=cl.y+cl.h/2+(R()-.5)*5,r=Math.min(cl.w,cl.h)*(ph==='interphase'?.3:.34);
+  const col=a=>`rgba(${38+R()*22|0},${18+R()*12|0},${48+R()*18|0},${a})`;
+  const chrom=(pts,w)=>{c.lineCap='round';c.lineJoin='round';
+    c.beginPath();c.moveTo(pts[0],pts[1]);for(let k=2;k<pts.length;k+=4)c.quadraticCurveTo(pts[k],pts[k+1],pts[k+2],pts[k+3]);
+    c.lineWidth=w*2.2;c.strokeStyle=col(.18);c.stroke();c.lineWidth=w;c.strokeStyle=col(.9);c.stroke()};
+  const wav=(x1,y1,x2,y2,w)=>{const mx=(x1+x2)/2+(R()-.5)*r*.18,my=(y1+y2)/2+(R()-.5)*r*.18;chrom([x1,y1,mx,my,x2,y2],w)};
+  if(ph==='interphase'){
+    c.beginPath();c.ellipse(cx,cy,r,r*(.85+R()*.2),R()*3,0,7);c.fillStyle=`rgba(${128+R()*20|0},${92+R()*16|0},${132+R()*16|0},.6)`;c.fill();c.strokeStyle='rgba(80,48,88,.7)';c.lineWidth=1.8;c.stroke();
+    for(let k=0;k<45;k++){const a=R()*7,d=Math.sqrt(R())*r*.9;c.beginPath();c.arc(cx+Math.cos(a)*d,cy+Math.sin(a)*d,.8+R()*1.4,0,7);c.fillStyle=`rgba(60,30,72,${.25+R()*.3})`;c.fill()}
+    for(let k=0;k<1+(R()<.5);k++){c.beginPath();c.arc(cx+(R()-.5)*r*.6,cy+(R()-.5)*r*.6,3.5+R()*2.5,0,7);c.fillStyle='rgba(45,18,52,.85)';c.fill()}
+  }else if(ph==='prophase'){
+    c.beginPath();c.arc(cx,cy,r*1.05,0,7);c.fillStyle='rgba(165,130,165,.35)';c.fill();c.setLineDash([3,4]);c.strokeStyle='rgba(80,48,88,.5)';c.lineWidth=1.4;c.stroke();c.setLineDash([]);
+    for(let k=0;k<16;k++){let x=cx+(R()-.5)*r*1.3,y=cy+(R()-.5)*r*1.3;const pts=[x,y];for(let q=0;q<3;q++){const nx=x+(R()-.5)*r*.55,ny=y+(R()-.5)*r*.55;pts.push((x+nx)/2+(R()-.5)*6,(y+ny)/2+(R()-.5)*6,nx,ny);x=nx;y=ny}
+      if(Math.hypot(x-cx,y-cy)<r*1.05)chrom(pts,2.4)}
+  }else if(ph==='metaphase'){
+    c.beginPath();c.ellipse(cx,cy,r*1.3,r*.75,0,0,7);c.fillStyle='rgba(238,228,214,.6)';c.fill();
+    for(let k=0;k<18;k++){const x=cx+(k-8.5)*r*.11+(R()-.5)*3;wav(x+(R()-.5)*5,cy-r*(.32+R()*.15),x+(R()-.5)*5,cy+r*(.32+R()*.15),3.2)}
+  }else if(ph==='anaphase'){
+    c.beginPath();c.ellipse(cx,cy,r*1.25,r*1.35,0,0,7);c.fillStyle='rgba(238,228,214,.5)';c.fill();
+    [-1,1].forEach(sg=>{const py=cy+sg*r*.88;for(let k=0;k<13;k++){const x=cx+(k-6)*r*.12+(R()-.5)*3,x2=cx+(x-cx)*.55+(R()-.5)*6,y2=cy+sg*r*(.2+R()*.15);
+      chrom([x,py+(R()-.5)*4,(x+x2)/2+(R()-.5)*5,(py+y2)/2,x2,y2],3)}});
+  }else if(ph==='telophase'){
+    [-1,1].forEach(sg=>{const py=cy+sg*r*.78;c.beginPath();c.ellipse(cx,py,r*.95,r*.4,0,0,7);c.fillStyle=col(.55);c.fill();
+      for(let k=0;k<22;k++){const x=cx+(R()-.5)*r*1.6,y=py+(R()-.5)*r*.55;wav(x,y,x+(R()-.5)*r*.4,y+(R()-.5)*r*.3,2.6)}});
+    c.beginPath();c.moveTo(cl.x+cl.w*.1,cy+(R()-.5)*2);c.quadraticCurveTo(cx,cy+(R()-.5)*5,cl.x+cl.w*.9,cy+(R()-.5)*2);c.strokeStyle='rgba(145,120,88,.9)';c.lineWidth=2.6;c.setLineDash([6,3]);c.stroke();c.setLineDash([]);
+  }
+}
+function onionImg(spec){
+  const key=JSON.stringify(spec);if(ONI[key])return ONI[key];
+  if(!canDraw())return '';
+  const W=720,H=480,cv=document.createElement('canvas');cv.width=W;cv.height=H;const c=cv.getContext&&cv.getContext('2d');if(!c)return '';
+  const R=rng(spec.seed);
+  c.fillStyle='#e6dfcd';c.fillRect(0,0,W,H);
+  const cells=[];let x=-12;
+  while(x<W){const cw=104+R()*30;let y=-10-R()*50;while(y<H){const ch=82+R()*34;cells.push({x,y,w:cw,h:ch});y+=ch}x+=cw}
+  const used=new Set();
+  spec.t.forEach(t=>{let best=null,bd=1e9;cells.forEach((cl,i)=>{if(used.has(i)||cl.w<110||cl.h<92||cl.x<0||cl.y<0||cl.x+cl.w>W||cl.y+cl.h>H)return;const d=Math.hypot(cl.x+cl.w/2-t[1]*W,cl.y+cl.h/2-t[2]*H);if(d<bd){bd=d;best=i}});used.add(best);cells[best].ph=t[0];t.cell=cells[best]});
+  let extra=spec.extra==null?2:spec.extra;
+  while(extra-->0){const i=Math.floor(R()*cells.length);if(!used.has(i)){used.add(i);cells[i].ph=PHK[1+Math.floor(R()*4)]}}
+  cells.forEach(cl=>{c.beginPath();const j=()=>(R()-.5)*5;c.moveTo(cl.x+j(),cl.y+j());c.lineTo(cl.x+cl.w+j(),cl.y+j());c.lineTo(cl.x+cl.w+j(),cl.y+cl.h+j());c.lineTo(cl.x+j(),cl.y+cl.h+j());c.closePath();
+    c.fillStyle=`rgb(${236+R()*10|0},${228+R()*10|0},${214+R()*10|0})`;c.fill();c.strokeStyle=`rgba(${150+R()*20|0},${130+R()*15|0},${98+R()*15|0},.95)`;c.lineWidth=2+R()*1.4;c.stroke();
+    for(let k=0;k<40;k++){c.beginPath();c.arc(cl.x+R()*cl.w,cl.y+R()*cl.h,.7+R()*1.6,0,7);c.fillStyle=`rgba(${130+R()*30|0},${100+R()*20|0},${110+R()*20|0},${.1+R()*.15})`;c.fill()}});
+  cells.forEach(cl=>onionPhase(c,cl,cl.ph||'interphase',R));
+  photoize(cv,R,.62,true);
+  spec.t.forEach(t=>{if(!t[3])return;const cl=t.cell,cx=cl.x+cl.w/2,cy=cl.y+cl.h/2;
+    c.beginPath();c.ellipse(cx,cy,cl.w*.5,cl.h*.5,0,0,7);c.lineWidth=5;c.strokeStyle='rgba(0,0,0,.55)';c.stroke();c.lineWidth=3;c.strokeStyle='#fff';c.stroke();
+    const lx=Math.min(W-26,cx+cl.w*.45),ly=Math.max(26,cy-cl.h*.42);c.font='800 30px Nunito, Arial, sans-serif';c.textAlign='center';c.textBaseline='middle';
+    c.lineWidth=6;c.strokeStyle='rgba(0,0,0,.8)';c.strokeText(t[3],lx,ly);c.fillStyle='#fff';c.fillText(t[3],lx,ly)});
+  c.font='700 14px Nunito, Arial, sans-serif';c.textAlign='left';c.textBaseline='alphabetic';c.fillStyle='rgba(0,0,0,.55)';c.fillRect(W-150,H-30,140,20);c.fillStyle='#fff';c.fillText('Onion root tip, 400\u00d7',W-144,H-15);
+  const url=cv.toDataURL('image/jpeg',.88);ONI[key]=url;return url;
+}
+/* eyepiece view for microscope 6 */
+let EPT=null;
+function epPaint(cv,m){
+  const c=cv.getContext('2d'),w=cv.width,h=cv.height;
+  c.fillStyle='#0b0d0e';c.fillRect(0,0,w,h);
+  const src=m.cv[m.slide].cv;if(!src)return;
+  const span={4:1024,10:430,40:160}[m.obj],half=span/2;
+  m.px=Math.max(half,Math.min(1024-half,m.px));m.py=Math.max(half,Math.min(1024-half,m.py));
+  const cx=w/2,cy=h/2,R=Math.min(w,h)*.47,blur=Math.abs(m.focus-m.ft[m.slide])/6;
+  c.save();c.beginPath();c.arc(cx,cy,R,0,7);c.clip();
+  c.imageSmoothingEnabled=true;
+  if(blur<.5)c.drawImage(src,m.px-half,m.py-half,span,span,cx-R,cy-R,2*R,2*R);
+  else if(typeof c.filter==='string'){c.filter=`blur(${(blur*w/360).toFixed(1)}px)`;c.drawImage(src,m.px-half,m.py-half,span,span,cx-R,cy-R,2*R,2*R);c.filter='none'}
+  else{const s=1/(1+blur*1.4);EPT=EPT||document.createElement('canvas');EPT.width=Math.max(6,Math.round(2*R*s));EPT.height=EPT.width;
+    const tc=EPT.getContext('2d');tc.imageSmoothingEnabled=true;tc.clearRect(0,0,EPT.width,EPT.height);tc.drawImage(src,m.px-half,m.py-half,span,span,0,0,EPT.width,EPT.height);c.drawImage(EPT,cx-R,cy-R,2*R,2*R)}
+  c.fillStyle='rgba(255,236,200,.06)';c.fillRect(cx-R,cy-R,2*R,2*R);
+  const g=c.createRadialGradient(cx,cy,R*.6,cx,cy,R);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(.85,'rgba(0,0,0,.25)');g.addColorStop(1,'rgba(0,0,0,.75)');c.fillStyle=g;c.fillRect(cx-R,cy-R,2*R,2*R);
+  c.restore();
+  const fs=Math.max(12,Math.round(w/32));c.font=`800 ${fs}px Nunito, Arial, sans-serif`;c.fillStyle='rgba(255,255,255,.75)';c.textAlign='left';
+  c.fillText(`Slide ${m.slide}`,fs*.8,fs*1.6);c.textAlign='right';c.fillText(`${m.obj}\u00d7 objective`,w-fs*.8,fs*1.6);
+  c.textAlign='left';c.fillStyle='rgba(255,255,255,.45)';c.font=`700 ${Math.round(fs*.8)}px Nunito, Arial, sans-serif`;c.fillText(`Total ${m.obj*10}\u00d7`,fs*.8,h-fs*.8);
+}
+function epMount(host,m){
+  const w=host.clientWidth||340,dpr=Math.min(2,window.devicePixelRatio||1),cv=document.createElement('canvas');
+  cv.width=Math.round(w*dpr);cv.height=Math.round(w*.85*dpr);cv.className='eyecv';cv.setAttribute('role','img');cv.setAttribute('aria-label',`View through the microscope eyepiece: slide ${m.slide} at ${m.obj} times objective`);
+  host.innerHTML='';host.appendChild(cv);epPaint(cv,m);
+  let drag=null;
+  cv.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY};cv.style.cursor='grabbing';try{cv.setPointerCapture(e.pointerId)}catch(_){}});
+  cv.addEventListener('pointermove',e=>{if(!drag)return;const span={4:1024,10:430,40:160}[m.obj],k=span/(cv.clientWidth*.94);m.px-=(e.clientX-drag.x)*k;m.py-=(e.clientY-drag.y)*k;drag={x:e.clientX,y:e.clientY};epPaint(cv,m)});
+  const up=()=>{drag=null;cv.style.cursor='grab'};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+  const f=document.getElementById('focus');if(f)f.addEventListener('input',()=>{m.focus=+f.value;epPaint(cv,m)});
+}
+
+/* ---------- cases ---------- */
+const TERMS={
+ 'Interphase':'The long stage in which a cell grows and copies its DNA. No separate chromosomes are visible.',
+ 'Prophase':'Chromosomes condense and become visible. The nuclear membrane breaks down.',
+ 'Metaphase':'Chromosomes line up along the middle of the cell.',
+ 'Anaphase':'Sister chromatids are pulled apart to opposite ends of the cell.',
+ 'Telophase':'Two new nuclei form at the ends of the cell and the cytoplasm divides.',
+ 'Mitotic index':'The share of cells in a tissue that are dividing.',
+ 'Totipotent':'Can become any cell and can form a whole organism, such as a zygote. Toti = whole.',
+ 'Pluripotent':'Can become almost any body cell, but not a whole organism. Pluri = many.',
+ 'Multipotent':'Can become several related cell types, such as blood cells. Multi = several.',
+ 'Differentiated':'Specialized for one job and unable to become other cell types.',
+ 'Stem cell':'An unspecialized cell that divides to make more cells, some of which specialize.',
+ 'Regeneration':'Regrowing or replacing damaged or missing parts of an organism.',
+ 'Autograft':'Tissue grown from the same person who receives it, so it is not rejected.',
+ 'Clone':'An organism that is genetically identical to its source.',
+ 'SCNT':'Somatic cell nuclear transfer: moving a body cell nucleus into an egg cell that has had its own nucleus removed.',
+ 'Surrogate':'An animal that carries an embryo until birth.',
+ 'Telomere':'A protective cap at the end of a chromosome. It shortens with each cell division.',
+ 'Telomerase':'An enzyme that rebuilds telomeres. Cancer cells and stem cells use it.',
+ 'Tumour':'A mass of cells formed by uncontrolled cell division.',
+ 'Metastasis':'Spread of cancer cells from the first tumour to form new tumours elsewhere.',
+ 'Primary tumour':'The tumour where the cancer first started.',
+ 'Secondary tumour':'A new tumour formed somewhere else by cancer cells that spread from the primary tumour.',
+ 'Mitochondria':'Small structures in the cytoplasm that release energy. They carry a little DNA of their own, passed on through the egg.',
+ 'Oncogene':'A gene that stimulates the cell cycle and cell growth (the accelerator).',
+ 'Tumour suppressor gene':'A gene that represses cell division and promotes apoptosis (the brake).',
+ 'Apoptosis':'Programmed cell death. A cell with damaged DNA normally destroys itself.',
+ 'Nanotechnology':'Technology that works with materials about 1 to 100 nanometres wide.',
+ 'Teratogen':'An agent that can cause abnormal development of an embryo or fetus.',
+ 'Bioaccumulation':'A substance building up in living things and becoming more concentrated up the food chain.',
+ 'Activated carbon':'Porous carbon that traps chemicals on its surface.',
+ 'Reverse osmosis':'Forcing water through a membrane that blocks dissolved substances.',
+ 'Bioremediation':'Using microbes to break down pollutants.',
+ 'Phytoremediation':'Using plants to take up pollutants from soil or water.'
+};
+const ST=[
+{id:'scope',n:'Slide Reading',room:'Onion root tip',grp:'Mitosis',
+ story:'Every new technician starts here. A stained onion root tip is on the stage. Find the cells caught in the middle of mitosis and name their phase.',
+ terms:['Interphase','Prophase','Metaphase','Anaphase','Telophase','Mitotic index'],
+ note:{need:'Diagnose problems in tissue by measuring how many cells are dividing.',tech:'Stains, compound microscopes and image analysis.',cap:'We can see chromosomes and count cells in each phase.'},
+ flow:[{k:'scope'}]},
+{id:'cellid',n:'Cell ID',room:'Stem cell samples',grp:'Stem cells',
+ story:'Sam is a burn patient who needs new skin. The freezer holds five cell samples. Test each one to find out what it can become.',
+ terms:['Totipotent','Pluripotent','Multipotent','Differentiated','Stem cell'],
+ note:{need:'Replace tissue lost to burns, injury or disease.',tech:'Stem cell culture and induced pluripotent stem cells.',cap:'We can choose cells that can rebuild the tissue we need.'},
+ flow:[{k:'demo',d:'potency'}]},
+{id:'clone',n:'Cloning Bench',room:'Sheep cells',grp:'Cloning',
+ story:'A breeder wants a copy of a prize 6-year-old sheep. Find out how a clone is made, what features it will have, and why it might not live as long.',
+ terms:['Clone','SCNT','Surrogate','Mitochondria','Telomere'],
+ note:{need:'Copy animals and plants with valuable traits.',tech:'Nuclear transfer and tissue culture.',cap:'We can make genetically identical organisms. Clones come from mitosis, so there is no meiosis gene shuffling.'},
+ flow:[{k:'demo',d:'clonelab'}]},
+{id:'graft',n:'Skin Graft',room:'Sam\u2019s skin cells',grp:'Regeneration',
+ story:'Sam\u2019s wound has been measured. Grow his own skin cells by mitosis. Too few and the graft has gaps. Too many and you waste time and risk mutations.',
+ terms:['Regeneration','Autograft'],
+ note:{need:'Treat burns without the body rejecting the graft.',tech:'Cultured skin grafts grown from the patient\u2019s own cells.',cap:'We can regenerate damaged skin using mitosis in the lab.'},
+ flow:[{k:'demo',d:'incubator'}]},
+{id:'telo',n:'Telomere Clock',room:'Clone cell line',grp:'Cloning',
+ story:'Cells in the clone line carry chromosome caps called telomeres. Predict how many times a cell can divide, then test a young cell, an old cell and a cancer cell.',
+ terms:['Telomere','Telomerase'],
+ note:{need:'Understand ageing and whether clones age normally.',tech:'Chromosome analysis and cell culture.',cap:'We can measure chromosome shortening and study its effects on cell division.'},
+ flow:[{k:'demo',d:'telomere'}]},
+{id:'plates',n:'Culture Plates',room:'Two culture plates',grp:'Cancer',
+ story:'Weeks later, one of your clone cultures is growing much too fast. Compare pairs of plates and click the one that has gone cancerous.',
+ terms:['Tumour','Mitotic index'],
+ note:{need:'Spot cancer early.',tech:'Microscopy and counting dividing cells.',cap:'We can tell abnormal tissue from normal by how many cells are dividing.'},
+ flow:[{k:'demo',d:'biopsy'}]},
+{id:'genes',n:'Runaway Division',room:'Tumour cell line',grp:'Cancer',
+ story:'Why did the plate go cancerous? Follow one cell with a broken brake and predict how long it takes to become a tumour.',
+ terms:['Oncogene','Tumour suppressor gene','Apoptosis','Metastasis'],
+ note:{need:'Understand what causes cancer so it can be prevented and treated.',tech:'Gene and cell cycle research.',cap:'We know that broken brakes or stuck accelerators let cells divide without control.'},
+ flow:[{k:'demo',d:'runaway'}]},
+{id:'meta',n:'Metastasis',room:'Live tissue time-lapse',grp:'Cancer',
+ story:'A time-lapse camera has been filming a tumour for weeks. Watch how cancer spreads from one organ to another.',
+ terms:['Primary tumour','Secondary tumour','Metastasis'],
+ note:{need:'Understand how cancer spreads so it can be caught before it does.',tech:'Time-lapse microscopy and imaging scans.',cap:'We can watch cancer cells move and learn how to block their spread.'},
+ flow:[{k:'demo',d:'meta'}]},
+{id:'nano',n:'Treatment Lab',room:'Tumour tissue',grp:'Cancer',
+ story:'Test two treatments on a tumour and compare how many healthy cells each one harms.',
+ terms:['Nanotechnology'],
+ note:{need:'Stop cancer without harming healthy tissue.',tech:'Drugs that block division and targeted nanoparticles.',cap:'We can deliver treatment to tumour cells while sparing healthy cells.'},
+ flow:[{k:'demo',d:'nano'}]},
+{id:'sources',n:'Teratogen Lab',room:'River, water and air samples',grp:'Teratogens',
+ story:'A batch of embryos from the clone programme is developing abnormally. Something in the environment may be a teratogen. Trace where each one comes from, then clean it up.',
+ terms:['Teratogen','Bioaccumulation','Activated carbon','Reverse osmosis','Bioremediation','Phytoremediation'],
+ note:{need:'Protect embryos and fetuses, and future generations, from environmental hazards.',tech:'Monitoring, filtration, reverse osmosis, bioremediation, phytoremediation and scrubbers.',cap:'We can trace teratogens to their sources and remove or control them in water, soil and air.'},
+ flow:[{k:'demo',d:'contain'}]},
+{id:'report',n:'Unit 3A Exam',room:'Exam room',grp:'Exam',report:true}
+];
+const stById=id=>ST.find(n=>n.id===id);
+const PROMPTS=[
+ ['r1','Science and technology are developed to meet societal needs and expand human capability. Explain this using one technology from the game.'],
+ ['r2','Discuss the role of mitosis and biotechnology in regenerating whole, damaged or missing parts of organisms. Use stem cells or skin tissue as an example.'],
+ ['r3','Evaluate how knowledge of cell division, or nanotechnology, could be applied to regulate cancerous growth in plants or animals. Give a benefit and a limit or risk.'],
+ ['r4','Assess the impact of research in plant and animal reproduction (cloning, chromosome shortening) on our understanding of mitosis and meiosis in humans.'],
+ ['r5','Name one teratogen, its source, and a technology that can remove or control it to protect future generations.']
+];
+
+/* ---------- state ---------- */
+let view='home',Z=null,D=null,cur=null,F=null,DM=null,leaving=false;
+const HEART='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.3 3 5 6.3 5c2 0 3.5 1.1 4.2 2.4h3C14.2 6.1 15.7 5 17.7 5 21 5 23.1 8.3 21.6 11.8 19.5 16.4 12 21 12 21z" fill="currentColor"/></svg>';
+const HEART0='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.3 3 5 6.3 5c2 0 3.5 1.1 4.2 2.4h3C14.2 6.1 15.7 5 17.7 5 21 5 23.1 8.3 21.6 11.8 19.5 16.4 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
+const heartsHTML=()=>`<div class="hearts" aria-label="${F.hearts} hearts left">${Array.from({length:3},(_,i)=>i<F.hearts?HEART:HEART0).join('')}</div>`;
+function lose(){}
+const doneCount=()=>ST.filter(n=>S.done[n.id]).length;
+const earned=()=>{const out=[];ST.forEach(n=>{if(S.done[n.id]&&n.terms)n.terms.forEach(t=>{if(!out.includes(t))out.push(t)})});return out};
+const num=n=>ST.indexOf(n)+1;
+const stepPlan=n=>(n.flow||[]).map(f=>f.k==='scope'?'Identify 10 cells on the stained slide':DEMOS[f.d].title+': '+DEMOS[f.d].intro.split('. ')[0].replace(/\.$/,'')+'.');
+
+/* ---------- map ---------- */
+const GW=17,GH=12,CS=56;
+// cubicles: [station id, first column, first row]; row0 = sign, row1 = bench, row2 = where you stand
+const CUBS=[['scope',1,0],['cellid',4,0],['clone',7,0],['graft',10,0],['telo',13,0],['plates',13,4],['genes',13,8],['meta',10,8],['nano',7,8],['sources',4,8],['sink',1,8],['hood',1,4]];
+const EXAM={c0:5,r0:4,c1:11,r1:6,x:8,y:5};
+const TILES=CUBS.filter(c=>ST.some(n=>n.id===c[0])).map(([id,c,r])=>({id,x:c+1,y:r+2})).concat([{id:'report',x:EXAM.x,y:EXAM.y}]);
+const START={x:2,y:3};
+const blocked=(x,y)=>CUBS.some(([,c,r])=>x>=c&&x<=c+2&&y>=r&&y<=r+1)||(x>=EXAM.c0&&x<=EXAM.c1&&y>=EXAM.r0&&y<=EXAM.r1&&!(x===EXAM.x&&(y===5||y===6)));
+const canWalk=(x,y)=>x>=0&&y>=0&&x<GW&&y<GH&&!blocked(x,y);
+const RANKS=[['Interphase Intern','interphase'],['Prophase Trainee','prophase'],['Metaphase Technician','metaphase'],['Anaphase Specialist','anaphase'],['Telophase Lead Scientist','telophase']];
+function rankIdx(){const d=ST.filter(n=>!n.report&&S.done[n.id]).length;return d<2?0:d<4?1:d<6?2:d<8?3:4}
+let RB=0,walkT=null;
+const tileAt=(x,y)=>TILES.find(t=>t.x===x&&t.y===y);
+function unlocked(id){
+  const i=ST.findIndex(n=>n.id===id);
+  if(S.open)return ST[i].report?ST.every(n=>n.report||S.done[n.id]):true;
+  if(i===0)return true;
+  if(ST[i].report)return !!S.done.sources;
+  return !!S.done[ST[i-1].id];
+}
+const nextTarget=()=>ST.find(n=>!n.report&&!S.done[n.id])||stById('report');
+function bfs(a,b){
+  const key=(x,y)=>x+','+y,prev={},q=[a];prev[key(a.x,a.y)]=null;
+  while(q.length){const c=q.shift();if(c.x===b.x&&c.y===b.y)break;
+    [[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx,dy])=>{const nx=c.x+dx,ny=c.y+dy;if(canWalk(nx,ny)&&!(key(nx,ny) in prev)){prev[key(nx,ny)]=c;q.push({x:nx,y:ny})}})}
+  if(!((key(b.x,b.y)) in prev))return null;
+  const out=[];let c=b;while(c){out.unshift(c);c=prev[key(c.x,c.y)]}return out;
+}
+function walkTo(x,y,then){
+  clearTimeout(walkT);
+  if(!canWalk(S.pos.x,S.pos.y))S.pos={...START};
+  const path=bfs(S.pos,{x,y});if(!path)return;
+  if(path.length<2){if(then)then();return}
+  let i=1;
+  const step=()=>{if(view!=='map')return;S.pos=path[i++];save();draw();
+    if(i<path.length)walkT=setTimeout(step,85);
+    else{if(then)then();const sp=document.getElementById('spanel');if(sp&&window.innerWidth<900&&sp.scrollIntoView)sp.scrollIntoView({block:'nearest',behavior:'smooth'})}};
+  step();
+}
+function scopeIcon(cx,cy){
+  return `<g transform="translate(${cx} ${cy})" pointer-events="none">
+   <ellipse cx="0" cy="15" rx="15" ry="4.5" fill="var(--rim)"/>
+   <path d="M6,13 C14,4 14,-8 4,-14" fill="none" stroke="var(--rim)" stroke-width="5" stroke-linecap="round"/>
+   <rect x="-11" y="2" width="20" height="3.5" rx="1.5" fill="var(--muted)"/>
+   <rect x="-5" y="-17" width="7" height="17" rx="2" transform="rotate(-18 -1 -8)" fill="var(--ink)"/>
+   <rect x="-7" y="-22" width="8" height="6" rx="1.5" transform="rotate(-18 -3 -19)" fill="var(--ink)"/>
+   <circle cx="-2" cy="-1" r="2.6" fill="var(--stain)"/></g>`;
+}
+function decor(x,y,k){
+  // a beaker on the left of the bench and a petri dish on the right
+  return `<g pointer-events="none"><path d="M${x+20},${y+14}h12l-1,20h-10z" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.5"/><path d="M${x+21.4},${y+25}h9.2l-.5,9h-8.2z" fill="${k%2?'var(--stain)':'var(--teal)'}" opacity=".55"/>
+   <ellipse cx="${x+3*CS-30}" cy="${y+28}" rx="11" ry="7" fill="var(--surface)" stroke="var(--teal)" stroke-width="1.5"/><ellipse cx="${x+3*CS-30}" cy="${y+28}" rx="6" ry="3.5" fill="var(--stain)" opacity=".35"/></g>`;
+}
+function cubicle([id,c,r],k){
+  const x=c*CS,y=r*CS,w=3*CS,hood=!ST.some(n=>n.id===id);
+  const n=hood?null:stById(id),i=hood?0:ST.indexOf(n)+1,dn=!hood&&S.done[id],un=!hood&&unlocked(id),nx=!hood&&nextTarget()===n&&!dn;
+  const signFill=hood?'var(--wall)':dn?'var(--good)':un?'var(--primary)':'var(--surface)';
+  const txtFill=hood?'var(--ink)':un||dn?'#fff':'var(--muted)';
+  const mat=dn?'var(--good-soft)':un?'var(--teal-soft)':'transparent';
+  const label=hood?(id==='hood'?'Fume hood':'Sink & eyewash'):`${i}  ${n.n}`;
+  let g=`<g class="${hood?'':'cub'}" ${hood?'':`data-a="wt" data-id="${id}" tabindex="0" role="button" aria-label="${esc('Microscope '+i+': '+n.n)}${dn?', complete':un?'':', locked'}"`}>`;
+  g+=`<rect class="cubfloor" x="${x+4}" y="${y+4}" width="${w-8}" height="${3*CS-8}" rx="10" fill="${mat}" opacity="${hood?0:.55}"/>`;
+  g+=`<path d="M${x+3},${y+4}V${y+2.45*CS}M${x+w-3},${y+4}V${y+2.45*CS}" stroke="var(--rim)" stroke-width="6" stroke-linecap="round"/>`;
+  g+=`<rect x="${x+3}" y="${y+2}" width="${w-6}" height="6" fill="var(--rim)"/>`;
+  g+=`<rect class="sign" x="${x+12}" y="${y+12}" width="${w-24}" height="${CS-22}" rx="8" fill="${signFill}" stroke="${un||dn||hood?'none':'var(--line-dk)'}" stroke-width="2"/>`;
+  if(nx)g+=`<rect class="pulse" x="${x+8}" y="${y+8}" width="${w-16}" height="${CS-14}" rx="11" fill="none" stroke="var(--stain)" stroke-width="3"/>`;
+  g+=`<text class="signtxt" x="${x+w/2}" y="${y+CS/2+3}" text-anchor="middle" style="fill:${txtFill}">${esc(label)}</text>`;
+  if(dn)g+=`<circle cx="${x+w-14}" cy="${y+12}" r="9" fill="var(--good)" stroke="var(--surface)" stroke-width="2"/><path d="M${x+w-18},${y+12}l3,3 5,-6" stroke="#fff" stroke-width="2.2" fill="none"/>`;
+  else if(!un&&!hood)g+=`<g transform="translate(${x+w-16} ${y+8})"><rect x="-6" y="0" width="12" height="9" rx="2" fill="var(--muted)"/><path d="M-3.5,0v-3a3.5,3.5 0 0 1 7,0v3" fill="none" stroke="var(--muted)" stroke-width="2"/></g>`;
+  const by=y+CS+2;
+  g+=`<rect x="${x+8}" y="${by}" width="${w-16}" height="${CS-10}" rx="6" fill="var(--bench)" stroke="var(--benchedge)" stroke-width="2"/><rect x="${x+8}" y="${by+CS-16}" width="${w-16}" height="6" rx="3" fill="var(--benchedge)"/>`;
+  if(id==='sink'){g+=`<ellipse cx="${x+w/2}" cy="${by+20}" rx="34" ry="14" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="2"/><path d="M${x+w/2},${by+4}v-6h14v6" fill="none" stroke="var(--rim)" stroke-width="4" stroke-linecap="round"/><circle cx="${x+w-28}" cy="${by+18}" r="8" fill="var(--good)"/>`}
+  else if(hood){g+=`<rect x="${x+30}" y="${by+4}" width="${w-60}" height="${CS-24}" rx="4" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="2" opacity=".8"/><path d="M${x+40},${by+8}l14,24M${x+62},${by+8}l14,24M${x+84},${by+8}l14,24" stroke="var(--surface)" stroke-width="3" opacity=".7"/>`}
+  else g+=decor(x,by,k)+scopeIcon(x+w/2,by+CS/2-8);
+  if(!hood){const sx=(c+1)*CS,sy=(r+2)*CS;g+=`<rect x="${sx+8}" y="${sy+8}" width="${CS-16}" height="${CS-16}" rx="8" fill="${dn?'var(--good)':un?'var(--primary)':'var(--line)'}" opacity=".22"/>`}
+  return g+'</g>';
+}
+function examRoom(){
+  const x=EXAM.c0*CS,y=EXAM.r0*CS,w=(EXAM.c1-EXAM.c0+1)*CS,h=(EXAM.r1-EXAM.r0+1)*CS,un=unlocked('report'),dn=S.done.report,dx=EXAM.x*CS;
+  let g=`<g class="cub" data-a="wt" data-id="report" tabindex="0" role="button" aria-label="Exam room: take the test${un?'':', locked'}">`;
+  g+=`<rect class="cubfloor" x="${x}" y="${y}" width="${w}" height="${h}" fill="${un?'var(--stain-soft)':'var(--surface)'}"/>`;
+  g+=`<path d="M${dx},${y+h}H${x}V${y}H${x+w}V${y+h}H${dx+CS}" fill="none" stroke="var(--rim)" stroke-width="7" stroke-linejoin="round"/>`;
+  g+=`<rect class="sign" x="${x+14}" y="${y+10}" width="${w-28}" height="34" rx="9" fill="var(--stain)"/>`;
+  g+=`<text class="signtxt" x="${x+w/2}" y="${y+32}" text-anchor="middle" style="font-size:16px">EXAM ROOM · TAKE THE TEST</text>`;
+  if(!un)g+=`<g transform="translate(${x+w-30} ${y+20})"><rect x="-6" y="0" width="12" height="9" rx="2" fill="#fff"/><path d="M-3.5,0v-3a3.5,3.5 0 0 1 7,0v3" fill="none" stroke="#fff" stroke-width="2"/></g>`;
+  if(dn)g+=`<circle cx="${x+w-26}" cy="${y+27}" r="9" fill="var(--good)" stroke="#fff" stroke-width="2"/><path d="M${x+w-30},${y+27}l3,3 5,-6" stroke="#fff" stroke-width="2.2" fill="none"/>`;
+  [5,6,7,9,10,11].forEach(cc=>[5,6].forEach(rr=>{const ex=cc*CS,ey=rr*CS;
+    g+=`<rect x="${ex+9}" y="${ey+8}" width="${CS-18}" height="${CS-26}" rx="4" fill="var(--bench)" stroke="var(--benchedge)" stroke-width="2"/><rect x="${ex+18}" y="${ey+12}" width="14" height="11" rx="1" fill="var(--surface)" stroke="var(--line-dk)"/><circle cx="${ex+CS/2}" cy="${ey+CS-9}" r="6" fill="var(--wall)"/>`}));
+  g+=`<rect x="${dx+6}" y="${y+48}" width="${CS-12}" height="${CS-48+CS-14}" rx="5" fill="var(--bench)" stroke="var(--benchedge)" stroke-width="2"/><rect x="${dx+16}" y="${y+54}" width="${CS-32}" height="20" rx="2" fill="#fff" stroke="var(--stain)" stroke-width="1.5"/><path d="M${dx+20},${y+60}h${CS-40}M${dx+20},${y+65}h${CS-44}M${dx+20},${y+70}h${CS-42}" stroke="var(--stain)" stroke-width="1.2"/>`;
+  return g+'</g>';
+}
+function mapSVG(){
+  const W=GW*CS,H=GH*CS;
+  let s=`<svg class="labmap" viewBox="-14 -14 ${W+28} ${H+28}" role="group" aria-label="Map of the practice lab: ten microscope cubicles around the walls and the exam room in the middle. Click the floor to walk, or click a cubicle to go to it.">
+  <defs><pattern id="labtiles" width="${CS}" height="${CS}" patternUnits="userSpaceOnUse"><rect width="${CS}" height="${CS}" fill="var(--floor)"/><path d="M${CS} 0V${CS}H0" fill="none" stroke="var(--floorline)" stroke-width="2"/></pattern></defs>
+  <rect x="-14" y="-14" width="${W+28}" height="${H+28}" rx="22" fill="var(--rim)"/>
+  <rect x="0" y="0" width="${W}" height="${H}" rx="10" fill="url(#labtiles)"/>`;
+  for(let y=0;y<GH;y++)for(let x=0;x<GW;x++)if(canWalk(x,y))s+=`<rect class="fhit" x="${x*CS}" y="${y*CS}" width="${CS}" height="${CS}" data-a="wf" data-x="${x}" data-y="${y}"/>`;
+  s+=`<g pointer-events="none" font-family="Nunito,sans-serif" font-weight="800" font-size="12" fill="var(--muted)" letter-spacing="1.5"><text x="${W/2}" y="${3*CS+34}" text-anchor="middle">←  PRACTICE LAB  →</text><text x="${W/2}" y="${7*CS+34}" text-anchor="middle">←  PRACTICE LAB  →</text></g>`;
+  CUBS.forEach((c,k)=>{s+=cubicle(c,k)});
+  s+=examRoom();
+  if(!canWalk(S.pos.x,S.pos.y))S.pos={...START};
+  const px=S.pos.x*CS+CS/2,py=S.pos.y*CS+CS/2+4;
+  s+=`<g pointer-events="none" transform="translate(${px} ${py}) scale(1.7)"><ellipse cx="0" cy="10" rx="8" ry="3" fill="rgba(0,0,0,.25)"/><rect x="-6" y="-3" width="12" height="12" rx="4" fill="#fff" stroke="var(--ink)" stroke-width="1.5"/><path d="M0,-3v12" stroke="var(--line-dk)" stroke-width="1"/><circle cx="0" cy="-8" r="5" fill="#E8B88A" stroke="var(--ink)" stroke-width="1.5"/><path d="M-5,-10a5,5 0 0 1 10,0z" fill="var(--ink)"/></g>`;
+  return s+'</svg>';
+}
+function mapView(){
+  const ri=rankIdx(),r=RANKS[ri],t=tileAt(S.pos.x,S.pos.y),nt=nextTarget();
+  let panel;
+  if(t){
+    const n=stById(t.id),un=unlocked(t.id),dn=S.done[t.id],i=ST.indexOf(n)+1;
+    if(n.report)panel=un?`<span class="tag">Exam room</span><b>Take the test</b><p class="muted">The Unit 3A exam: diploma-style questions, including onion root tip micrographs. You have 5 hearts.${dn&&dn.pct!=null?' Best first-try score: '+dn.pct+'%.':''}</p><button class="btn" data-a="open" data-id="${t.id}">${dn?'Take the test again':'Take the test'}</button>`:`<span class="tag">Exam room</span><b>Locked</b><p class="muted">Practise at all ten microscopes first, then come back here to take the test.</p>`;
+    else panel=`<span class="tag">Microscope ${i}</span><b>${esc(n.n)}</b><p class="muted">Sample: ${esc(n.room)}${dn?' · complete':''}</p>`+(un?`<button class="btn" data-a="open" data-id="${t.id}">${dn?'Use it again':'Look through the microscope'}</button>`:`<p>Locked. Finish microscope ${i-1} first.</p>`);
+  }else{
+    const i=ST.indexOf(nt)+1;
+    panel=`<span class="tag">Up next</span><b>${nt.report?'Exam room: take the test':'Microscope '+i+': '+esc(nt.n)}</b><p class="muted">Click a cubicle to walk to it, or click anywhere on the floor.</p><button class="btn ghost" data-a="wt" data-id="${nt.id}">Walk there</button>`;
+  }
+  return `<div class="top"><div class="brand"><span class="tag">Biology 30 · Unit 3A</span><h1>Mitosis Lab</h1></div><div class="stats"><span class="pill">${S.xp} points</span><button class="pill" data-a="mode" data-v="${S.open?'lock':'free'}" style="cursor:pointer" title="Switch play mode">${S.open?'Unlocked':'Locked'} mode \u00b7 switch</button><span class="pill">${ST.filter(n=>!n.report&&S.done[n.id]).length}/10 practised</span><button class="link" data-a="title">Menu and notebook</button></div></div>
+  <div class="labgrid">
+   <div style="min-width:0"><div class="mapscroll">${mapSVG()}</div><p class="muted" style="font-size:13px;margin-top:8px">Click a cubicle to walk to it. ${S.open?'Unlocked mode: every microscope is open, so pick any one.':'The flashing sign shows where to go next.'}</p></div>
+   <aside class="side">
+    <div class="card"><div class="hud" style="margin:0"><div class="cellfig">${fig(r[1])}</div><div style="min-width:0"><b>${esc(S.name?S.name+', ':'')}${esc(r[0])}</b><div class="phases" aria-label="Mitosis progress">${RANKS.map((_,i)=>`<i class="${i<=ri?'on':''}"></i>`).join('')}</div></div></div>
+     <p class="muted" style="font-size:14px;margin-top:8px">Your cell is in ${PHN[r[1]].toLowerCase()}. ${esc(HINT[r[1]])}</p></div>
+    <div class="card stack" id="spanel">${panel}</div>
+   </aside>
+  </div>`;
+}
+
+function home(){
+  const ew=earned();
+  return `<div class="top"><div class="brand"><span class="tag">Biology 30 · Unit 3A</span><h1>Mitosis Lab</h1></div>
+  <div class="stats"><span class="pill">${S.xp} points</span><span class="pill">${doneCount()}/${ST.length-1} microscopes</span></div></div>
+  <p class="muted" style="margin-bottom:16px">You are the new technician at a cell culture lab. Click your way around the lab from microscope to microscope. Each microscope is a different job: read slides, test stem cells, grow a skin graft, clone a sheep, catch a cancer, trace a contaminant. As you finish jobs, your cell moves through the stages of mitosis and you earn a new rank. The microscopes are your practice lab, so take your time. When you have practised at all of them, walk into the exam room in the middle and take the test: diploma-style questions with 5 hearts.</p>
+  <div class="namebox"><label for="nm">Your name or initials</label><input id="nm" type="text" value="${esc(S.name)}" placeholder="Shown with your rank" autocomplete="off"></div>
+  <div class="card stack" style="margin-bottom:16px"><b>How do you want to play?</b>
+   <div class="row2">
+    <button class="opt ${S.open?'':'sel'}" data-a="mode" data-v="lock" aria-pressed="${!S.open}"><span class="k">${S.open?'':'\u2713'}</span><span><b>Locked</b><br><span class="muted" style="font-size:14px;font-weight:600">Go through the microscopes in order. Each one opens when you finish the one before.</span></span></button>
+    <button class="opt ${S.open?'sel':''}" data-a="mode" data-v="free" aria-pressed="${S.open}"><span class="k">${S.open?'\u2713':''}</span><span><b>Unlocked</b><br><span class="muted" style="font-size:14px;font-weight:600">Pick any microscope to play or replay. The exam opens once all ten are done.</span></span></button>
+   </div></div>
+  <button class="btn" data-a="enter">${doneCount()?'Continue in the lab':'Enter the lab'}</button>
+  <details open><summary>Lab notebook: words you have earned (${ew.length})</summary><div class="gloss">${ew.length?ew.map(t=>`<div><b>${esc(t)}</b>: ${esc(TERMS[t])}</div>`).join(''):'<div class="muted">Finish a microscope to add its words here.</div>'}</div></details>
+  <details><summary>For teachers: curriculum map</summary>
+  <ol class="map">
+   <li><b>SEC1:</b> Explain that science and technology are developed to meet societal needs and expand human capability. Every microscope ends with a Lab Note linking a need, a technology and a capability.</li>
+   <li><b>Microscopes 1 and 2:</b> mitosis phases from stained cells; stem cell potency (totipotent, pluripotent, multipotent, differentiated).</li>
+   <li><b>Microscopes 3 and 5:</b> impact of reproduction research (cloning, telomere shortening) on understanding mitosis and meiosis. Students order the steps of nuclear transfer, predict which sheep each feature comes from, and age a clone beside a normal lamb.</li>
+   <li><b>Microscope 4:</b> role of mitosis and biotechnology in regenerating damaged or missing parts (skin graft, stem cells). Students predict incubation time from doubling.</li>
+   <li><b>Microscopes 6 to 9:</b> how knowledge of cell division and nanotechnology can regulate cancerous growth: reading 3D biopsy slides (nuclear size and shape, mitotic index), tumour suppressor genes, an animated time-lapse of metastasis, targeted nanoparticles.</li>
+   <li><b>Microscope 10:</b> types and sources of teratogens and the technologies that remove or control them.</li>
+   <li><b>Exam room (Take the test):</b> 22 diploma-style multiple-choice and numerical-response questions across all outcomes, including photo-style onion root tip micrographs for phase identification. Students need to get every question right with 5 hearts; missed questions come back at the end.</li>
+   <li><b>Ranks:</b> students advance through the phases of mitosis (interphase to telophase) as they complete microscopes. The microscopes are practice only, with no hearts.</li>
+  </ol>
+  <p class="muted" style="margin-top:10px;font-size:14px">Progress is saved only in each student’s own browser. A student’s exam score shows in the exam room.</p>
+  <p class="muted" style="margin-top:10px;font-size:14px">Students choose Locked or Unlocked on the title screen, and can switch any time from the lab. Progress is kept either way.</p>
+  <p style="margin-top:10px"><button class="link" data-a="reset">Reset my progress</button></p></details>`;
+}
+function brief(){
+  const n=cur;
+  if(n.report)return `<div class="bar"><button class="x" data-a="home" aria-label="Back to the lab">\u00d7</button></div>
+  <div class="brief"><span class="tag">Exam room</span><h1>Take the test</h1><p class="muted">Unit 3A: Cell division, cloning and cancer</p>
+  <div class="card"><b>How it works</b><p style="margin-top:6px">${DQ.length} questions written like the Biology 30 diploma exam, covering everything you practised in the lab. Some use photomicrographs of onion root tip cells. You have 5 hearts. A wrong answer costs a heart and the question comes back at the end. Get every question right to finish.</p></div>
+  <button class="btn" data-a="start">Start the test</button></div>`;
+  return `<div class="bar"><button class="x" data-a="home" aria-label="Back to the lab">\u00d7</button></div>
+  <div class="brief"><span class="tag">Microscope ${num(n)}</span><h1>${esc(n.n)}</h1><p class="muted">Sample: ${esc(n.room)}</p>
+  <div class="card"><b>Case file</b><p style="margin-top:6px">${esc(n.story)}</p></div>
+  <button class="btn" data-a="start">Go to the microscope</button></div>`;
+}
+function startFlow(n){F={n,i:0,hearts:3};RB=rankIdx();runStep()}
+function runStep(){
+  leaving=false;const s=F.n.flow[F.i];
+  if(s.k==='demo'){DM=DEMOS[s.d].init();F.d=DEMOS[s.d];view='demo'}
+  else if(s.k==='scope')startScope();
+}
+function advance(){
+  F.i++;
+  if(F.i>=F.n.flow.length)finishStation(F.n);else runStep();
+}
+function finishStation(n){S.xp+=20;if(!S.done[n.id])S.done[n.id]={pct:null};save();D={n,pct:null,gain:20};view='done'}
+function record(id,pct){const o=S.done[id];S.done[id]={pct:Math.max(pct,o&&o.pct!=null?o.pct:0)};save()}
+function demoView(){
+  const d=F.d,ms=d.mission(DM),ok=ms.every(m=>m[1]);
+  const lv=leaving?`<div class="ovl"><b>Leave this microscope?</b><p class="muted">Your progress here will be lost.</p>
+    <div class="mcols"><button class="btn ghost" data-a="stay">Stay</button><button class="btn" data-a="home">Leave</button></div></div>`:'';
+  return `<div class="bar"><button class="x" data-a="quit" aria-label="Leave microscope">\u00d7</button>
+   <div class="prog"><i style="width:${100*ms.filter(m=>m[1]).length/ms.length}%"></i></div><span class="pill">Practice</span></div>${lv}
+  <span class="tag">Microscope ${num(F.n)}</span><h2 style="margin-top:6px">${esc(d.title)}</h2><p class="muted" style="margin:4px 0 12px">${esc(d.intro)}</p>
+  <div class="card eyepiece stack">${d.view(DM)}</div>
+  <ul class="mission">${ms.map(m=>`<li class="${m[1]?'on':''}"><span class="ck">${m[1]?'\u2713':''}</span>${esc(m[0])}</li>`).join('')}</ul>
+  <div class="foot"><button class="btn" data-a="dnext" ${ok?'':'disabled'}>Finish this microscope</button></div>`;
+}
+function failView(){
+  return `<div class="center"><span class="tag">Out of hearts</span><h1>Test stopped</h1>
+  <p class="muted">You used all 5 hearts. Go back and practise, or read the explanations and try the test again. The questions come in a new order.</p>
+  <button class="btn" data-a="rretry">Take the test again</button><button class="btn ghost" data-a="home">Back to the lab</button></div>`;
+}
+function doneView(){
+  const n=D.n,ri=rankIdx(),up=ri>RB,r=RANKS[ri];
+  return `<div class="center"><span class="tag">${n.report?'Exam':'Microscope '+num(n)} complete</span><h1>${esc(n.n)}</h1>
+  ${D.pct!=null?`<div class="big">${D.pct}%</div><p class="muted">first-try accuracy</p>`:''}
+  <div class="facts"><span class="pill">+${D.gain} points</span><span class="pill">${S.xp} points total</span></div>
+  ${up?`<div class="card note" style="text-align:center"><span class="tag">Rank up</span><h2 style="margin:8px 0">${esc(r[0])}</h2><div class="fig" style="max-width:200px">${fig(r[1])}</div><p>Your cell has moved into <b>${PHN[r[1]].toLowerCase()}</b>. ${esc(HINT[r[1]])}</p></div>`:''}
+  ${n.terms?`<div class="card note stack"><b>Added to your notebook</b>${n.terms.map(t=>`<div class="term"><b>${esc(t)}</b><span>${esc(TERMS[t])}</span></div>`).join('')}</div>`:''}
+  ${n.note?`<div class="card note"><b>Lab note: science, technology and society</b><dl><dt>Need</dt><dd>${esc(n.note.need)}</dd><dt>Technology</dt><dd>${esc(n.note.tech)}</dd><dt>Capability</dt><dd>${esc(n.note.cap)}</dd></dl></div>`:''}
+  <button class="btn" data-a="home">Back to the lab</button></div>`;
+}
+
+/* ---------- microscope bay ---------- */
+const COLS=6,ROWS=4;
+function startScope(){
+  leaving=false;
+  const phs=shuffle([...Array(16).fill('interphase'),...['prophase','metaphase','anaphase','telophase'].flatMap(p=>[p,p])]);
+  const cells=phs.map((ph,i)=>({ph,rot:Math.floor(Math.random()*360),col:i%COLS,row:Math.floor(i/COLS),pin:0}));
+  let ints=0;const pinned=[];
+  cells.forEach(c=>{if(c.ph!=='interphase'||(ints<2&&(ints++,true)))pinned.push(c)});
+  shuffle(pinned).forEach((c,i)=>c.pin=i+1);
+  Z={cells,sel:null,done:{},tries:{},first:0,err:0,fb:null,mag:'low',quad:0,fin:false,qa:null,gain:0};
+  view='scope';
+}
+const byPin=n=>Z.cells.find(c=>c.pin===n);
+const quadOf=c=>(c.col>=3?1:0)+(c.row>=2?2:0);
+function field(){
+  const hi=Z.mag==='high';
+  const vb=hi?`${(Z.quad%2)*300} ${Math.floor(Z.quad/2)*200} 300 200`:'0 0 600 400';
+  let s=`<svg class="field" viewBox="${vb}" role="group" aria-label="Stained root tip slide, ${hi?'40 times':'10 times'} magnification">`;
+  Z.cells.forEach(c=>{
+    const x=c.col*100,y=c.row*100;
+    s+=`<rect class="wall" x="${x}" y="${y}" width="100" height="100"/>`;
+    if(hi)s+=`<svg x="${x}" y="${y}" width="100" height="100" viewBox="0 -30 200 200"><g transform="rotate(${c.rot} 100 70)">${parts(c.ph,true)}</g></svg>`;
+    else s+=c.ph==='interphase'?`<circle class="blob" cx="${x+50}" cy="${y+50}" r="17" opacity=".28"/>`:`<circle class="blob" cx="${x+50}" cy="${y+50}" r="11" opacity=".8"/>`;
+    if(c.pin){
+      const ok=Z.done[c.pin];
+      s+=`<circle class="pin ${ok?'ok':''}" cx="${x+14}" cy="${y+14}" r="11"/><text class="pn ${ok?'ok':''}" x="${x+14}" y="${y+19}">${ok?'✓':c.pin}</text>`;
+      if(Z.sel===c.pin)s+=`<rect class="selc" x="${x+2}" y="${y+2}" width="96" height="96" rx="4"/>`;
+      s+=`<rect class="hit" x="${x}" y="${y}" width="100" height="100" data-a="scell" data-n="${c.pin}" tabindex="0" role="button" aria-label="Cell number ${c.pin}${ok?', identified':''}"/>`;
+    }
+  });
+  return s+'</svg>';
+}
+function scopeView(){
+  const nd=Object.keys(Z.done).length;
+  const hi=Z.mag==='high';
+  const quads=['Top left','Top right','Bottom left','Bottom right'];
+  let panel='';
+  if(Z.fin){
+    const tl={};PHK.forEach(p=>tl[p]=Z.cells.filter(c=>c.ph===p).length);
+    const div=Z.cells.length-tl.interphase;
+    const mi=Math.round(100*div/Z.cells.length);
+    const qa=Z.qa;
+    const opts=[['Interphase takes up most of the cell cycle, while mitosis is short',true],['Cells in interphase never divide',false],['Mitosis cannot be seen under a microscope',false],['Only interphase cells have a nucleus',false]];
+    if(!Z.order)Z.order=shuffle(opts.map((o,i)=>i));
+    panel=`<div class="card stack"><h2>Slide count</h2>
+      <table class="tally"><tr><th>Phase</th><th>Cells</th></tr>${PHK.map(p=>`<tr><td>${PHN[p]}</td><td>${tl[p]}</td></tr>`).join('')}<tr><td><b>Mitotic index (dividing ÷ total)</b></td><td><b>${div}/${Z.cells.length} = ${mi}%</b></td></tr></table>
+      <p class="muted" style="font-size:14px">This practice slide was edited to show every stage. In real healthy tissue, the share of dividing cells is much lower.</p>
+      <b>Why are most cells in healthy tissue in interphase?</b>
+      <div class="opts">${Z.order.map(i=>{const o=opts[i];const c=qa==null?'':(o[1]?'right':(qa===i?'wrong':''));return `<button class="opt ${c}" data-a="sq" data-i="${i}" ${qa!=null?'disabled':''}>${esc(o[0])}</button>`}).join('')}</div>
+      ${qa!=null?`<div class="fb ${opts[qa][1]?'good':'bad'}">${opts[qa][1]?'Correct. ':'Not quite. '}Interphase (G1, S and G2) is the long stage in which the cell grows and copies its DNA. Mitosis is a short event by comparison.</div>`:''}
+      <button class="btn" data-a="sfinish" ${qa==null?'disabled':''}>Finish station</button></div>`;
+  }else if(Z.sel){
+    panel=`<div class="card stack"><b>Cell ${Z.sel}: which phase is it in?</b><div class="phbtns">${PHK.map(p=>`<button class="btn ghost sm" data-a="sans" data-p="${p}">${PHN[p]}</button>`).join('')}</div>
+      ${Z.fb?`<div class="fb ${Z.fb.ok?'good':'bad'}">${esc(Z.fb.t)}</div>`:''}</div>`;
+  }else{
+    panel=`<div class="card stack"><p>${nd?'Pick another numbered pin.':'Tap a numbered pin on the slide.'} <span class="muted">Zoom to 40× to see the chromosomes.</span></p>
+      ${Z.fb?`<div class="fb ${Z.fb.ok?'good':'bad'}">${esc(Z.fb.t)}</div>`:''}</div>`;
+  }
+  const lv=leaving?`<div class="ovl"><b>Leave Microscope Bay?</b><p class="muted">Your identifications on this slide will be lost.</p>
+    <div class="mcols"><button class="btn ghost" data-a="stay">Stay</button><button class="btn" data-a="home">Leave</button></div></div>`:'';
+  return `<div class="bar"><button class="x" data-a="quit" aria-label="Leave station">×</button>
+    <div class="prog" role="progressbar" aria-valuemin="0" aria-valuemax="10" aria-valuenow="${nd}"><i style="width:${nd*10}%"></i></div><span class="pill">${nd}/10</span></div>${lv}
+    <h2 style="margin-bottom:4px">Onion root tip</h2><p class="muted" style="margin-bottom:10px">Stained with aceto-orcein. DNA appears magenta.</p>
+    <div class="tools"><div class="grp" role="group" aria-label="Magnification"><button class="${hi?'':'on'}" data-a="mag" data-m="low">10×</button><button class="${hi?'on':''}" data-a="mag" data-m="high">40×</button></div>
+    ${hi?`<div class="grp" role="group" aria-label="Move the slide" style="flex-wrap:wrap">${quads.map((q,i)=>`<button class="${Z.quad===i?'on':''}" data-a="quad" data-q="${i}">${q}</button>`).join('')}</div>`:''}</div>
+    <div class="scopebox">${field()}</div><div style="margin-top:14px">${panel}</div>`;
+}
+function scopeAnswer(p){
+  const c=byPin(Z.sel),n=Z.sel;
+  if(c.ph===p){
+    const t=Z.tries[n]||0;Z.done[n]=true;
+    if(t===0){Z.first++;S.xp+=10;Z.gain+=10}else{S.xp+=5;Z.gain+=5}
+    save();Z.fb={ok:true,t:`Correct: ${PHN[p]}. ${HINT[p]}`};Z.sel=null;
+    if(Object.keys(Z.done).length===10){Z.fin=true;Z.fb=null}
+  }else{
+    Z.tries[n]=(Z.tries[n]||0)+1;Z.err++;lose();
+    Z.fb={ok:false,t:`Not ${PHN[p]}. Look again: ${HINT[c.ph]}`};
+  }
+}
+function scopeFinish(){
+  const pct=Math.round(100*Z.first/10);
+  S.xp+=20;Z.gain+=20;record('scope',pct);
+  const div=Z.cells.filter(c=>c.ph!=='interphase').length;
+  S.scope={first:Z.first,total:10,mi:Math.round(100*div/Z.cells.length)};save();
+  D={n:stById('scope'),pct,gain:Z.gain};view='done';
+}
+
+/* ---------- lab report ---------- */
+function reportText(){
+  const lines=['CELL DIVISION LAB: LAB REPORT','Name: '+(S.name||'(not entered)'),'XP: '+S.xp,'','Case results'];
+  ST.filter(s=>!s.report).forEach(s=>lines.push('- '+s.n+': '+(S.done[s.id]?(S.done[s.id].pct!=null?S.done[s.id].pct+'% first try':'complete'):'not finished')));
+  if(S.scope)lines.push('Microscope slide: '+S.scope.first+'/'+S.scope.total+' cells identified first try; mitotic index on slide '+S.scope.mi+'%');
+  lines.push('','Written responses');
+  PROMPTS.forEach(([k,p],i)=>lines.push('',(i+1)+'. '+p,(S.rep[k]||'(no answer)').trim()));
+  return lines.join('\n');
+}
+function report(){
+  return `<div class="bar"><button class="x" data-a="home" aria-label="Back to the lab">×</button></div>
+  <span class="tag">Lab Report</span><h1 style="margin:6px 0 8px">Write it up</h1>
+  <p class="muted" style="margin-bottom:16px">Answer each prompt in your own words. Your answers save as you type. When you are done, copy the report and paste it where your teacher asked.</p>
+  <div class="namebox"><label for="nm">Your name or initials</label><input id="nm" type="text" value="${esc(S.name)}" autocomplete="off"></div>
+  <div class="stack">${PROMPTS.map(([k,p],i)=>`<div class="rep"><label for="t${k}">${i+1}. ${esc(p)}</label><textarea id="t${k}" data-r="${k}">${esc(S.rep[k]||'')}</textarea></div>`).join('')}
+  <button class="btn" data-a="copy">Copy my Lab Report</button><p id="msg" class="muted" role="status"></p>
+  <textarea id="out" readonly hidden aria-label="Lab report text"></textarea>
+  <button class="btn ghost" data-a="reset" id="rs">Reset my progress</button></div>`;
+}
+async function copyReport(){
+  const t=reportText(),m=$('#msg');
+  try{await navigator.clipboard.writeText(t);m.textContent='Copied. Paste it into your assignment.'}
+  catch(e){const o=$('#out');o.hidden=false;o.value=t;o.focus();o.select();m.textContent='Select all the text below and copy it.'}
+}
+
+/* ---------- exam (diploma-style) ---------- */
+const DQ=[
+ {t:'mc',img:{seed:101,t:[['metaphase',.5,.5,'X']]},info:'The photomicrograph shows cells in an onion root tip, stained so that DNA appears dark.',q:'The cell labelled X is in',o:['prophase','metaphase','anaphase','telophase'],c:1,why:'The chromosomes form a dark band across the middle of the cell: the metaphase plate.'},
+ {t:'mc',img:{seed:202,t:[['anaphase',.45,.55,'X']]},info:'The photomicrograph shows cells in an onion root tip, stained so that DNA appears dark.',q:'Which event is occurring in the cell labelled X?',o:['Chromatin is condensing into thread-like chromosomes','Chromosomes are lining up single file at the equator','Sister chromatids are being pulled to opposite poles','A cell plate is forming between two newly made nuclei'],c:2,why:'Two groups of chromosomes moving apart, with their arms trailing toward the middle, is anaphase.'},
+ {t:'mc',img:{seed:303,t:[['telophase',.55,.45,'X']]},info:'The photomicrograph shows cells in an onion root tip, stained so that DNA appears dark.',q:'The cell labelled X is in telophase. Which feature identifies it?',o:['One large nucleus with a dark nucleolus and no chromosomes','Thread-like chromosomes scattered through a fading nucleus','Chromosomes lined up in one band across the middle','Two dense groups of chromosomes with a cell plate between'],c:3,why:'In plant cells, a cell plate forms between the two new nuclei in telophase. Plant cells cannot pinch in because of the cell wall.'},
+ {t:'nr',img:{seed:404,t:[['telophase',.2,.3,'1'],['prophase',.75,.28,'2'],['anaphase',.25,.75,'3'],['metaphase',.72,.72,'4']],extra:0},info:'The photomicrograph shows four onion root tip cells, labelled 1 to 4, in different stages of mitosis.',q:'Record, in order, the numbers of the cells as their stages would occur in mitosis.',nr:'2431',why:'Prophase (2), metaphase (4), anaphase (3), telophase (1).'},
+ {t:'mc',img:{seed:505,t:[['interphase',.5,.5,'Y']],extra:3},info:'The photomicrograph shows cells in an onion root tip. Most cells look like the cell labelled Y.',q:'Most cells in the root tip look like cell Y because',o:['interphase is the longest stage of the cell cycle','these cells have finished dividing and will never divide again','the stain only shows chromosomes in cells that are dying','cells in interphase are bigger, so they are easier to see'],c:0,why:'Cell Y has an intact nucleus with no visible chromosomes. Cells spend most of the cycle in interphase, so most cells in any sample are in interphase.'},
+ {t:'nr',info:'Four events that occur during mitosis are listed below.<br>1 Sister chromatids separate and move to opposite poles.<br>2 Chromatin condenses into visible chromosomes.<br>3 Nuclear membranes re-form around each set of chromosomes.<br>4 Chromosomes line up along the equator of the cell.',q:'Record, in order, the numbers of the events as they occur in mitosis.',nr:'2413',why:'Prophase (2), metaphase (4), anaphase (1), telophase (3).'},
+ {t:'nr',info:'A student counted the cells in one field of view of an onion root tip.<table class="tally" style="margin-top:8px"><tr><th>Stage</th><th>Cells</th></tr><tr><td>Interphase</td><td>164</td></tr><tr><td>Prophase</td><td>18</td></tr><tr><td>Metaphase</td><td>9</td></tr><tr><td>Anaphase</td><td>5</td></tr><tr><td>Telophase</td><td>4</td></tr></table>',q:'The percentage of cells in this field of view that are undergoing mitosis is ____%. (Record your answer as a whole number.)',nr:'18',why:'Dividing cells: 18 + 9 + 5 + 4 = 36. Total: 200. 36 ÷ 200 = 18%.'},
+ {t:'mc',q:'A human skin cell in G1 contains 46 chromosomes. Immediately after the S phase, this cell contains',o:['23 chromosomes and 46 chromatids','46 chromosomes and 46 chromatids','46 chromosomes and 92 chromatids','92 chromosomes and 92 chromatids'],c:2,why:'DNA replication copies each chromosome into two sister chromatids. The chromosome number stays at 46 until the chromatids separate in anaphase.'},
+ {t:'mc',fig:'anaphase',q:'The cell shown above is in',o:['prophase, because the nuclear membrane is breaking down','metaphase, because the chromosomes are lined up at the equator','anaphase, because sister chromatids are moving to opposite poles','telophase, because new nuclear membranes are re-forming at each pole'],c:2,why:'Separated chromatids being pulled toward the poles is anaphase.'},
+ {t:'mc',info:'Colchicine is a chemical that prevents spindle fibres from forming.',q:'Root tip cells treated with colchicine stop dividing at metaphase because',o:['DNA cannot be replicated during the S phase','chromosomes cannot be aligned and pulled apart','the nuclear membrane cannot break down in prophase','cytokinesis must begin before the chromosomes separate'],c:1,why:'Spindle fibres attach to the chromosomes, line them up and pull the chromatids apart. Without them, mitosis cannot get past metaphase.'},
+ {t:'mc',info:'Cells taken from the inner cell mass of a 5-day-old human embryo can develop into any type of body cell, but they cannot form a placenta.',q:'These cells are best described as',o:['totipotent','pluripotent','multipotent','differentiated'],c:1,why:'Pluripotent cells can form almost any body cell but not a whole organism. Only the zygote and its first few cells are totipotent.'},
+ {t:'mc',q:'Cultured skin grown from a burn patient’s own cells is less likely to be rejected than donor skin because the cultured cells',o:['were produced by meiosis, so they are new to the body','have the same DNA as the patient’s other cells','are totipotent, so they can become any tissue needed','have no nucleus, so the immune system cannot detect them'],c:1,why:'The cells were produced by mitosis from the patient’s own cells, so the immune system recognizes them as self.'},
+ {t:'mc',info:'A nucleus from a mammary cell of Sheep X (white face) was inserted into an enucleated egg cell from Sheep Y (black face). The embryo was implanted into Sheep Z (black face).',q:'The nuclear DNA and the mitochondrial DNA of the lamb would match those of, respectively,',o:['Sheep X and Sheep Y','Sheep Y and Sheep X','Sheep X and Sheep Z','Sheep Z and Sheep Y'],c:0,why:'The nucleus came from X. Mitochondria are in the egg cytoplasm, which came from Y. The surrogate Z gives no DNA.'},
+ {t:'mc',q:'After the reconstructed egg in a nuclear transfer experiment is activated, the cells of the embryo are produced by',o:['meiosis','mitosis','fertilization','crossing over'],c:1,why:'Mitosis copies the donor nucleus exactly into every new cell, which is why the result is a clone.'},
+ {t:'mc',q:'Dolly the sheep had shorter telomeres than other sheep her age. The best explanation is that',o:['her cells divided by meiosis instead of mitosis','her donor nucleus came from a 6-year-old sheep','the surrogate mother passed its telomeres to her','telomerase was removed during nuclear transfer'],c:1,why:'Telomeres shorten with each division. The clone started life with chromosomes that were already 6 years old.'},
+ {t:'mc',q:'Most cancer cells can divide far more times than normal body cells because they',o:['have extra chromosomes that replace damaged ones','produce telomerase, which rebuilds telomeres','divide by meiosis, which resets the cell cycle','are totipotent, like the cells of a zygote'],c:1,why:'Telomerase stops telomeres from running out, so the cells never reach their division limit.'},
+ {t:'mc',q:'A mutation in a tumour suppressor gene can lead to cancer because',o:['the cell can no longer replicate its DNA in S phase','damaged cells are no longer sent into apoptosis','the cell becomes haploid and loses half its genes','spindle fibres can no longer form during mitosis'],c:1,why:'Tumour suppressor genes are the brakes on the cell cycle. When they fail, damaged cells keep dividing.'},
+ {t:'mc',q:'Metastasis occurs when',o:['cancer cells spread through blood or lymph to form new tumours','a benign tumour keeps growing but stays in the same place','damaged cells in a tumour are destroyed by programmed cell death','a tumour is removed by surgery before it can grow any larger'],c:0,why:'Spread to new sites makes cancer much harder to treat.'},
+ {t:'mc',info:'Researchers attach chemotherapy drugs to nanoparticles that bind to receptors found mainly on tumour cells.',q:'Compared with standard chemotherapy, a likely benefit of this technology is that',o:['all rapidly dividing cells in the body are destroyed','fewer healthy, rapidly dividing cells are damaged','cancer cells can no longer develop new mutations','the drug no longer needs to pass safety testing'],c:1,why:'Targeted delivery concentrates the drug in tumour cells and reduces side effects.'},
+ {t:'mc',info:'Mercury released by burning coal enters lakes, where bacteria convert it to methylmercury. Pregnant women are advised to limit how much large predatory fish they eat.',q:'This advice is given because methylmercury',o:['is a teratogen that becomes concentrated in large fish','causes the fish to reproduce asexually by budding','breaks down quickly once it enters the human body','affects only adults and cannot cross the placenta to a fetus'],c:0,why:'Bioaccumulation concentrates methylmercury in large fish, and it can disrupt the developing nervous system of a fetus.'},
+ {t:'mc',q:'Which technology would be most effective at removing dissolved lead from a household drinking water supply?',o:['Boiling the water for ten minutes','Reverse osmosis filtration','Adding chlorine to the water','Installing a smokestack scrubber'],c:1,why:'A reverse osmosis membrane blocks dissolved metal ions. Boiling can actually concentrate lead.'},
+ {t:'mc',q:'The development of cultured skin grafts for burn patients best illustrates that',o:['technology is developed to meet societal needs','technology always develops before the science behind it','scientific knowledge does not change once it is published','new medical technologies come with no risks to patients'],c:0,why:'Knowledge of mitosis and stem cells was applied to meet a medical need and expand what doctors can do.'}
+];
+let RV=null;
+function startReview(){RV={queue:shuffle(DQ).map(q=>({q,retry:false})),total:DQ.length,hearts:5,first:0,corr:0,gain:0};RB=rankIdx();rLoad();view='review';leaving=false}
+function rLoad(){RV.sel=null;RV.inp='';RV.checked=false;RV.ok=false;const q=RV.queue[0].q;RV.ord=q.t==='mc'?shuffle(q.o.map((_,i)=>i)):[]}
+function rCheck(){
+  const it=RV.queue[0],q=it.q;
+  if(q.t==='mc'&&RV.sel==null)return;
+  if(q.t==='nr'&&!RV.inp.trim())return;
+  const ok=q.t==='mc'?RV.sel===q.c:RV.inp.trim().replace(/^0+(?=\d)/,'')===q.nr;
+  RV.checked=true;RV.ok=ok;
+  if(ok){RV.corr++;if(!it.retry)RV.first++;const g=it.retry?5:10;S.xp+=g;RV.gain+=g;save()}
+  else{RV.hearts--;RV.queue.push({q,retry:true})}
+}
+function rNext(){
+  RV.queue.shift();
+  if(RV.hearts<=0)return;
+  if(!RV.queue.length){const pct=Math.round(100*RV.first/RV.total);S.xp+=20;RV.gain+=20;record('report',pct);D={n:stById('report'),pct,gain:RV.gain};view='done';return}
+  rLoad();
+}
+function reviewView(){
+  const it=RV.queue[0],q=it.q,lk=RV.checked;
+  const hearts=`<div class="hearts" aria-label="${RV.hearts} hearts left">${Array.from({length:5},(_,i)=>i<RV.hearts?HEART:HEART0).join('')}</div>`;
+  let body=`<span class="tag">${it.retry?'Try again':'Exam question '+(RV.total-RV.queue.length+1>RV.total?RV.total:RV.corr+1)+' of '+RV.total}</span>`;
+  if(q.info)body+=`<div class="card" style="margin-top:10px;background:var(--teal-soft);border-color:var(--teal)"><b style="font-size:14px">Use the following information to answer the next question.</b><div style="margin-top:6px">${q.info}</div>${q.img?`<img class="micro" style="margin-top:10px" src="${onionImg(q.img)}" alt="Photomicrograph of onion root tip cells${q.img.t.filter(t=>t[3]).length?' with labelled cells':''}">`:''}</div>`;
+  if(q.fig)body+=`<div class="fig" style="margin-top:12px">${fig(q.fig)}</div>`;
+  body+=`<h2 class="q" style="margin-top:12px">${esc(q.q)}</h2>`;
+  if(q.t==='mc')body+='<div class="opts">'+RV.ord.map((i,pos)=>{const o=q.o[i],c=lk?(i===q.c?'right':(RV.sel===i?'wrong':'')):(RV.sel===i?'sel':'');
+    return `<button class="opt ${c}" data-a="rpick" data-i="${i}" ${lk?'disabled':''}><span class="k">${'ABCD'[pos]}</span>${esc(o)}</button>`}).join('')+'</div>';
+  else body+=`<div class="card stack"><label for="nrin"><b>Numerical response</b></label><input id="nrin" type="text" inputmode="numeric" maxlength="4" autocomplete="off" value="${esc(RV.inp)}" ${lk?'disabled':''} style="font:800 28px var(--display);letter-spacing:.3em;text-align:center;max-width:220px"></div>`;
+  const foot=!lk?`<button class="btn" data-a="rcheck">Check</button>`
+   :`<div class="sheet ${RV.ok?'good':'bad'}"><strong>${RV.ok?'Correct':'Not quite'}</strong>${!RV.ok?`<p class="why"><b>Answer:</b> ${q.t==='mc'?'ABCD'[RV.ord.indexOf(q.c)]+'. '+esc(q.o[q.c]):esc(q.nr)}</p>`:''}<p class="why">${esc(q.why)}</p><button class="btn" data-a="rnext">Continue</button></div>`;
+  return `<div class="bar"><button class="x" data-a="home" aria-label="Leave the review">×</button>
+   <div class="prog" role="progressbar" aria-valuemin="0" aria-valuemax="${RV.total}" aria-valuenow="${RV.corr}"><i style="width:${100*RV.corr/RV.total}%"></i></div>${hearts}</div>${body}<div class="rfoot" id="rfoot">${foot}</div>`;
+}
+
+/* ---------- render + events ---------- */
+function html(){
+  if(view==='review')return RV.hearts<=0?failView():reviewView();
+  if(view==='map')return mapView();
+  if(view==='brief')return brief();
+  if(view==='demo')return demoView();
+  if(view==='scope')return scopeView();
+  if(view==='done')return doneView();
+  return home();
+}
+function draw(){
+  const app=$('#app'),y=window.scrollY;
+  app.className='wrap'+(view==='map'?' wide':'');
+  app.innerHTML=html();
+  afterDraw();
+  if(view==='scope'||view==='demo'||view==='map')window.scrollTo(0,y);
+}
+function go(v){view=v;leaving=false;draw();window.scrollTo(0,0)}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-a]');if(!b||b.disabled)return;
+  const a=b.dataset.a,d=b.dataset;
+  if(a==='start'){if(cur.report)startReview();else startFlow(cur);draw();window.scrollTo(0,0);return}
+  if(a==='reset'){
+    if(b.dataset.armed){S={name:'',xp:0,done:{},rep:{},open:S.open,scope:null,pos:{x:2,y:3}};save();go('home');return}
+    b.dataset.armed='1';b.textContent='Tap again to erase all progress';return;
+  }
+  if(a==='rretry'){startReview();draw();window.scrollTo(0,0);return}
+  if(view==='review'){
+    if(a==='rpick'&&!RV.checked)RV.sel=+d.i;
+    else if(a==='rcheck'){rCheck();draw();const f=document.getElementById('rfoot');if(f&&f.scrollIntoView)f.scrollIntoView({block:'end',behavior:'smooth'});return}
+    else if(a==='rnext'){rNext();draw();window.scrollTo(0,0);return}
+    draw();return;
+  }
+  if(a==='home'){Z=null;DM=null;go('map');return}
+  if(a==='title'){go('home');return}
+  if(a==='enter'){go('map');return}
+  if(view==='map'){
+    if(a==='wf'){walkTo(+d.x,+d.y);return}
+    if(a==='wt'){const t=TILES.find(x=>x.id===d.id);if(S.pos.x===t.x&&S.pos.y===t.y){if(unlocked(t.id)){cur=stById(t.id);go('brief')}else draw()}else walkTo(t.x,t.y);return}
+    if(a==='open'){cur=stById(d.id);go('brief');return}
+  }
+  if(a==='unlock'){S.open=!S.open;save();draw();return}
+  if(a==='mode'){S.open=d.v==='free';save();draw();return}
+  if(a==='quit'){leaving=true;draw();return}
+  if(a==='stay'){leaving=false;draw();return}
+  if(view==='demo'){
+    if(a==='tsel')return;
+    if(a==='dnext'){S.xp+=10;save();advance();draw();window.scrollTo(0,0);return}
+    F.d.act(DM,a,d);draw();return;
+  }
+  if(view==='scope'){
+    if(a==='mag'){Z.mag=d.m;if(Z.mag==='high'&&Z.sel)Z.quad=quadOf(byPin(Z.sel))}
+    else if(a==='quad')Z.quad=+d.q;
+    else if(a==='scell'){const n=+d.n;if(!Z.done[n]){Z.sel=n;Z.fb=null;Z.mag='high';Z.quad=quadOf(byPin(n))}}
+    else if(a==='sans')scopeAnswer(d.p);
+    else if(a==='sq'&&Z.qa==null)Z.qa=+d.i;
+    else if(a==='sfinish'){scopeFinish();draw();window.scrollTo(0,0);return}
+    draw();return;
+  }
+});
+document.addEventListener('change',e=>{
+  const t=e.target;
+  if(view==='demo'&&t.dataset&&t.dataset.a==='tsel'){DM.as[t.dataset.c]=t.value;DM.res=null;draw()}
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&e.target.id==='nrin'&&RV&&!RV.checked){e.preventDefault();rCheck();draw();const f=document.getElementById('rfoot');if(f&&f.scrollIntoView)f.scrollIntoView({block:'end'});return}
+  if(e.key==='Enter'&&view==='review'&&RV&&RV.checked&&!/BUTTON/.test(e.target.tagName)){e.preventDefault();rNext();draw();window.scrollTo(0,0);return}
+  if(e.key==='Enter'||e.key===' '){const t=e.target;if(t&&t.hasAttribute&&t.hasAttribute('data-a')&&/^(rect|g)$/.test(t.tagName.toLowerCase())){e.preventDefault();t.dispatchEvent(new MouseEvent('click',{bubbles:true}))}}
+});
+document.addEventListener('input',e=>{
+  const t=e.target;
+  if(t.id==='nm'){S.name=t.value;save()}
+  else if(t.id==='nrin'&&RV){RV.inp=t.value}
+  else if(t.dataset&&t.dataset.r){S.rep[t.dataset.r]=t.value;save()}
+});
+draw();
+</script>
+
+</body>
+</html>
